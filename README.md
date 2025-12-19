@@ -2,9 +2,7 @@
 
 A demo of integrating ChatKit by hosting a ChatKit server in our own infrastructure.
 
-For more details, please refer to my blog: [OpenAI: Embeddable Chat with ChatKit With Custom ChatKit Server](https://medium.com/p/openai-embeddable-chat-with-chatkit-with-custom-chatkit-server-d03b40190b13).
 
-![](./demo.gif)
 
 
 ## What's Inside
