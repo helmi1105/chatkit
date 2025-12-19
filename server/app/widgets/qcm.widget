@@ -1,0 +1,194 @@
+{
+  "version": "1.0",
+  "name": "QCM (4 choices)",
+  "template": "{\"type\":\"Card\",\"size\":\"md\",\"children\":[{\"type\":\"Form\",\"onSubmitAction\":{\"type\":\"qcm.submit\"},\"children\":[{\"type\":\"Col\",\"gap\":3,\"children\":[{%- set _c -%},{\"type\":\"Title\",\"value\":{{ (title) | tojson }},\"size\":\"md\"}{%-for q in questions -%}{%-set index = loop.index0 -%},{\"type\":\"Col\",\"key\":{{ (q.id) | tojson }},\"gap\":2,\"padding\":{\"y\":2},\"children\":[{\"type\":\"Caption\",\"value\":{{ ((\"Question \" ~ (index + 1))) | tojson }},\"color\":\"secondary\"},{\"type\":\"Text\",\"value\":{{ (q.prompt) | tojson }},\"size\":\"sm\",\"weight\":\"semibold\"},{\"type\":\"RadioGroup\",\"name\":{{ ((\"answers.\" ~ q.id)) | tojson }},\"options\":{{ (q.choices) | tojson }},\"required\":true},{\"type\":\"Divider\"}]}{%-endfor-%},{\"type\":\"Row\",\"children\":[{\"type\":\"Spacer\"},{\"type\":\"Button\",\"submit\":true,\"label\":\"Submit\",\"style\":\"primary\"}]}{%- endset -%}{{- (_c[1:] if _c and _c[0] == ',' else _c) -}}]}]}]}",
+  "jsonSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string"
+      },
+      "questions": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "choices": {
+              "minItems": 4,
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label",
+                  "value"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "id",
+            "prompt",
+            "choices"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "title",
+      "questions"
+    ],
+    "additionalProperties": false
+  },
+  "outputJsonPreview": {
+    "type": "Card",
+    "size": "md",
+    "children": [
+      {
+        "type": "Form",
+        "onSubmitAction": {
+          "type": "qcm.submit"
+        },
+        "children": [
+          {
+            "type": "Col",
+            "gap": 3,
+            "children": [
+              {
+                "type": "Title",
+                "value": "Quick QCM",
+                "size": "md"
+              },
+              {
+                "type": "Col",
+                "key": "q1",
+                "gap": 2,
+                "padding": {
+                  "y": 2
+                },
+                "children": [
+                  {
+                    "type": "Caption",
+                    "value": "Question 1",
+                    "color": "secondary"
+                  },
+                  {
+                    "type": "Text",
+                    "value": "Capital of France?",
+                    "size": "sm",
+                    "weight": "semibold"
+                  },
+                  {
+                    "type": "RadioGroup",
+                    "name": "answers.q1",
+                    "options": [
+                      {
+                        "label": "Paris",
+                        "value": "paris"
+                      },
+                      {
+                        "label": "Madrid",
+                        "value": "madrid"
+                      },
+                      {
+                        "label": "Rome",
+                        "value": "rome"
+                      },
+                      {
+                        "label": "Berlin",
+                        "value": "berlin"
+                      }
+                    ],
+                    "required": true
+                  },
+                  {
+                    "type": "Divider"
+                  }
+                ]
+              },
+              {
+                "type": "Col",
+                "key": "q2",
+                "gap": 2,
+                "padding": {
+                  "y": 2
+                },
+                "children": [
+                  {
+                    "type": "Caption",
+                    "value": "Question 2",
+                    "color": "secondary"
+                  },
+                  {
+                    "type": "Text",
+                    "value": "2 + 2 = ?",
+                    "size": "sm",
+                    "weight": "semibold"
+                  },
+                  {
+                    "type": "RadioGroup",
+                    "name": "answers.q2",
+                    "options": [
+                      {
+                        "label": "3",
+                        "value": "3"
+                      },
+                      {
+                        "label": "4",
+                        "value": "4"
+                      },
+                      {
+                        "label": "5",
+                        "value": "5"
+                      },
+                      {
+                        "label": "6",
+                        "value": "6"
+                      }
+                    ],
+                    "required": true
+                  },
+                  {
+                    "type": "Divider"
+                  }
+                ]
+              },
+              {
+                "type": "Row",
+                "children": [
+                  {
+                    "type": "Spacer"
+                  },
+                  {
+                    "type": "Button",
+                    "submit": true,
+                    "label": "Submit",
+                    "style": "primary"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "encodedWidget": "eyJpZCI6ImVhMTU4MzlhLTliNTgtNGRmMy1hN2FiLTRkZmUwYWUzYTQzMiIsIm5hbWUiOiJRQ00gKDQgY2hvaWNlcykiLCJ2aWV3IjoiPENhcmQgc2l6ZT1cIm1kXCI-XG4gIDxGb3JtIG9uU3VibWl0QWN0aW9uPXt7IHR5cGU6IFwicWNtLnN1Ym1pdFwiIH19PlxuICAgIDxDb2wgZ2FwPXszfT5cbiAgICAgIDxUaXRsZSB2YWx1ZT17dGl0bGV9IHNpemU9XCJtZFwiIC8-XG4gICAgICB7cXVlc3Rpb25zLm1hcCgocSwgaW5kZXgpID0-IChcbiAgICAgICAgPENvbCBrZXk9e3EuaWR9IGdhcD17Mn0gcGFkZGluZz17eyB5OiAyIH19PlxuICAgICAgICAgIDxDYXB0aW9uIHZhbHVlPXtgUXVlc3Rpb24gJHtpbmRleCArIDF9YH0gY29sb3I9XCJzZWNvbmRhcnlcIiAvPlxuICAgICAgICAgIDxUZXh0IHZhbHVlPXtxLnByb21wdH0gc2l6ZT1cInNtXCIgd2VpZ2h0PVwic2VtaWJvbGRcIiAvPlxuICAgICAgICAgIDxSYWRpb0dyb3VwIG5hbWU9e2BhbnN3ZXJzLiR7cS5pZH1gfSBvcHRpb25zPXtxLmNob2ljZXN9IHJlcXVpcmVkIC8-XG4gICAgICAgICAgPERpdmlkZXIgLz5cbiAgICAgICAgPC9Db2w-XG4gICAgICApKX1cbiAgICAgIDxSb3c-XG4gICAgICAgIDxTcGFjZXIgLz5cbiAgICAgICAgPEJ1dHRvbiBzdWJtaXQgbGFiZWw9XCJTdWJtaXRcIiBzdHlsZT1cInByaW1hcnlcIiAvPlxuICAgICAgPC9Sb3c-XG4gICAgPC9Db2w-XG4gIDwvRm9ybT5cbjwvQ2FyZD4iLCJkZWZhdWx0U3RhdGUiOnsidGl0bGUiOiJRdWljayBRQ00iLCJxdWVzdGlvbnMiOlt7ImlkIjoicTEiLCJwcm9tcHQiOiJDYXBpdGFsIG9mIEZyYW5jZT8iLCJjaG9pY2VzIjpbeyJsYWJlbCI6IlBhcmlzIiwidmFsdWUiOiJwYXJpcyJ9LHsibGFiZWwiOiJNYWRyaWQiLCJ2YWx1ZSI6Im1hZHJpZCJ9LHsibGFiZWwiOiJSb21lIiwidmFsdWUiOiJyb21lIn0seyJsYWJlbCI6IkJlcmxpbiIsInZhbHVlIjoiYmVybGluIn1dfSx7ImlkIjoicTIiLCJwcm9tcHQiOiIyICsgMiA9ID8iLCJjaG9pY2VzIjpbeyJsYWJlbCI6IjMiLCJ2YWx1ZSI6IjMifSx7ImxhYmVsIjoiNCIsInZhbHVlIjoiNCJ9LHsibGFiZWwiOiI1IiwidmFsdWUiOiI1In0seyJsYWJlbCI6IjYiLCJ2YWx1ZSI6IjYifV19XX0sInN0YXRlcyI6W10sInNjaGVtYSI6ImltcG9ydCB7IHogfSBmcm9tIFwiem9kXCJcblxuY29uc3QgQ2hvaWNlID0gei5zdHJpY3RPYmplY3Qoe1xuICBsYWJlbDogei5zdHJpbmcoKSxcbiAgdmFsdWU6IHouc3RyaW5nKCksXG59KVxuXG5jb25zdCBRdWVzdGlvbiA9IHouc3RyaWN0T2JqZWN0KHtcbiAgaWQ6IHouc3RyaW5nKCksXG4gIHByb21wdDogei5zdHJpbmcoKSxcbiAgY2hvaWNlczogei5hcnJheShDaG9pY2UpLmxlbmd0aCg0KSxcbn0pXG5cbmNvbnN0IFdpZGdldFN0YXRlID0gei5zdHJpY3RPYmplY3Qoe1xuICB0aXRsZTogei5zdHJpbmcoKSxcbiAgcXVlc3Rpb25zOiB6LmFycmF5KFF1ZXN0aW9uKSxcbn0pXG5cbmV4cG9ydCBkZWZhdWx0IFdpZGdldFN0YXRlIiwianNvblNjaGVtYSI6eyIkc2NoZW1hIjoiaHR0cHM6Ly9qc29uLXNjaGVtYS5vcmcvZHJhZnQvMjAyMC0xMi9zY2hlbWEiLCJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJ0aXRsZSI6eyJ0eXBlIjoic3RyaW5nIn0sInF1ZXN0aW9ucyI6eyJ0eXBlIjoiYXJyYXkiLCJpdGVtcyI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJpZCI6eyJ0eXBlIjoic3RyaW5nIn0sInByb21wdCI6eyJ0eXBlIjoic3RyaW5nIn0sImNob2ljZXMiOnsibWluSXRlbXMiOjQsIm1heEl0ZW1zIjo0LCJ0eXBlIjoiYXJyYXkiLCJpdGVtcyI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJsYWJlbCI6eyJ0eXBlIjoic3RyaW5nIn0sInZhbHVlIjp7InR5cGUiOiJzdHJpbmcifX0sInJlcXVpcmVkIjpbImxhYmVsIiwidmFsdWUiXSwiYWRkaXRpb25hbFByb3BlcnRpZXMiOmZhbHNlfX19LCJyZXF1aXJlZCI6WyJpZCIsInByb21wdCIsImNob2ljZXMiXSwiYWRkaXRpb25hbFByb3BlcnRpZXMiOmZhbHNlfX19LCJyZXF1aXJlZCI6WyJ0aXRsZSIsInF1ZXN0aW9ucyJdLCJhZGRpdGlvbmFsUHJvcGVydGllcyI6ZmFsc2V9LCJzY2hlbWFNb2RlIjoianNvblNjaGVtYSIsInNjaGVtYVZhbGlkaXR5IjoidmFsaWQiLCJ2aWV3VmFsaWRpdHkiOiJ2YWxpZCIsImRlZmF1bHRTdGF0ZVZhbGlkaXR5IjoidmFsaWQifQ"
+}

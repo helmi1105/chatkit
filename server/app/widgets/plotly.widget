@@ -1,0 +1,130 @@
+{
+  "version": "1.0",
+  "name": "Weekly signups",
+  "template": "{\"type\":\"Card\",\"size\":\"sm\",\"children\":[{\"type\":\"Row\",\"align\":\"center\",\"gap\":3,\"children\":[{\"type\":\"Box\",\"background\":\"alpha-10\",\"radius\":\"sm\",\"padding\":2,\"children\":[{\"type\":\"Icon\",\"name\":{{ (icon) | tojson }},\"size\":\"lg\",\"color\":\"primary\"}]},{\"type\":\"Col\",\"flex\":\"auto\",\"gap\":0,\"children\":[{\"type\":\"Title\",\"value\":{{ (title) | tojson }},\"size\":\"sm\"},{\"type\":\"Caption\",\"value\":{{ (subtitle) | tojson }}}]},{\"type\":\"Button\",\"label\":{{ (buttonLabel) | tojson }},\"style\":\"primary\",\"size\":\"sm\",\"onClickAction\":{\"type\":{{ (action.type) | tojson }},\"handler\":{{ (action.handler) | tojson }},\"payload\":{{ (action.payload) | tojson }}}}]}]}",
+  "jsonSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string"
+      },
+      "subtitle": {
+        "type": "string"
+      },
+      "buttonLabel": {
+        "type": "string"
+      },
+      "icon": {
+        "type": "string",
+        "enum": [
+          "analytics",
+          "chart"
+        ]
+      },
+      "action": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "handler": {
+            "type": "string",
+            "enum": [
+              "client",
+              "server"
+            ]
+          },
+          "payload": {
+            "type": "object",
+            "properties": {
+              "html": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "html"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "type",
+          "handler",
+          "payload"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "title",
+      "subtitle",
+      "buttonLabel",
+      "icon",
+      "action"
+    ],
+    "additionalProperties": false
+  },
+  "outputJsonPreview": {
+    "type": "Card",
+    "size": "sm",
+    "children": [
+      {
+        "type": "Row",
+        "align": "center",
+        "gap": 3,
+        "children": [
+          {
+            "type": "Box",
+            "background": "alpha-10",
+            "radius": "sm",
+            "padding": 2,
+            "children": [
+              {
+                "type": "Icon",
+                "name": "analytics",
+                "size": "lg",
+                "color": "primary"
+              }
+            ]
+          },
+          {
+            "type": "Col",
+            "flex": "auto",
+            "gap": 0,
+            "children": [
+              {
+                "type": "Title",
+                "value": "Weekly signups",
+                "size": "sm"
+              },
+              {
+                "type": "Caption",
+                "value": "Last 7 days"
+              }
+            ]
+          },
+          {
+            "type": "Button",
+            "label": "View report",
+            "style": "primary",
+            "size": "sm",
+            "onClickAction": {
+              "type": "report.open",
+              "handler": "client",
+              "payload": {
+                "html": "<html>...</html>",
+                "title": "Weekly signups"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "encodedWidget": "eyJpZCI6ImRiODZjN2M5LThhYjEtNGU0ZS05NmY1LWEyODQ0MmFiOTI3OSIsIm5hbWUiOiJXZWVrbHkgc2lnbnVwcyIsInZpZXciOiI8Q2FyZCBzaXplPVwic21cIj5cbiAgPFJvdyBhbGlnbj1cImNlbnRlclwiIGdhcD17M30-XG4gICAgPEJveCBiYWNrZ3JvdW5kPVwiYWxwaGEtMTBcIiByYWRpdXM9XCJzbVwiIHBhZGRpbmc9ezJ9PlxuICAgICAgPEljb24gbmFtZT17aWNvbn0gc2l6ZT1cImxnXCIgY29sb3I9XCJwcmltYXJ5XCIgLz5cbiAgICA8L0JveD5cbiAgICA8Q29sIGZsZXg9XCJhdXRvXCIgZ2FwPXswfT5cbiAgICAgIDxUaXRsZSB2YWx1ZT17dGl0bGV9IHNpemU9XCJzbVwiIC8-XG4gICAgICA8Q2FwdGlvbiB2YWx1ZT17c3VidGl0bGV9IC8-XG4gICAgPC9Db2w-XG4gICAgPEJ1dHRvblxuICAgICAgbGFiZWw9e2J1dHRvbkxhYmVsfVxuICAgICAgc3R5bGU9XCJwcmltYXJ5XCJcbiAgICAgIHNpemU9XCJzbVwiXG4gICAgICBvbkNsaWNrQWN0aW9uPXt7IHR5cGU6IGFjdGlvbi50eXBlLCBwYXlsb2FkOiBhY3Rpb24ucGF5bG9hZCB9fVxuICAgIC8-XG4gIDwvUm93PlxuPC9DYXJkPiIsImRlZmF1bHRTdGF0ZSI6eyJ0aXRsZSI6IldlZWtseSBzaWdudXBzIiwic3VidGl0bGUiOiJMYXN0IDcgZGF5cyIsImJ1dHRvbkxhYmVsIjoiVmlldyByZXBvcnQiLCJpY29uIjoiYW5hbHl0aWNzIiwiYWN0aW9uIjp7InR5cGUiOiJyZXBvcnQub3BlbiIsInBheWxvYWQiOnsiaWQiOiJ3ZWVrbHktc2lnbnVwcyJ9fX0sInN0YXRlcyI6W10sInNjaGVtYSI6ImltcG9ydCB7IHogfSBmcm9tIFwiem9kXCJcblxuY29uc3QgQWN0aW9uID0gei5zdHJpY3RPYmplY3Qoe1xuICB0eXBlOiB6LnN0cmluZygpLFxuICBwYXlsb2FkOiB6LnN0cmljdE9iamVjdCh7IGlkOiB6LnN0cmluZygpIH0pLFxufSlcblxuY29uc3QgV2lkZ2V0U3RhdGUgPSB6LnN0cmljdE9iamVjdCh7XG4gIHRpdGxlOiB6LnN0cmluZygpLFxuICBzdWJ0aXRsZTogei5zdHJpbmcoKSxcbiAgYnV0dG9uTGFiZWw6IHouc3RyaW5nKCksXG4gIGljb246IHouZW51bShbXCJhbmFseXRpY3NcIiwgXCJjaGFydFwiXSksXG4gIGFjdGlvbjogQWN0aW9uLFxufSlcblxuZXhwb3J0IGRlZmF1bHQgV2lkZ2V0U3RhdGUiLCJqc29uU2NoZW1hIjp7fSwic2NoZW1hTW9kZSI6InpvZCIsInNjaGVtYVZhbGlkaXR5IjoidmFsaWQiLCJ2aWV3VmFsaWRpdHkiOiJ2YWxpZCIsImRlZmF1bHRTdGF0ZVZhbGlkaXR5IjoidmFsaWQifQ"
+}   
+

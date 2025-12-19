@@ -1,0 +1,397 @@
+{
+  "version": "1.0",
+  "name": "Fire Doctrine Study Card",
+  "template": "{\"type\":\"Card\",\"size\":\"sm\",\"children\":[{\"type\":\"Col\",\"gap\":2,\"children\":[{%- set _c -%},{\"type\":\"Title\",\"value\":{{ (payload.title) | tojson }},\"size\":\"md\"}{%-for sec in payload.sections -%}{%-set idx = loop.index0 -%},{\"type\":\"Col\",\"key\":{{ ((idx | string)) | tojson }},\"gap\":2,\"children\":[{%- set _c -%},{\"type\":\"Caption\",\"value\":{{ (sec.label) | tojson }}}{%-if sec.content -%},{\"type\":\"Text\",\"value\":{{ (sec.content) | tojson }},\"size\":\"sm\",\"color\":\"secondary\"}{%-else-%}{%-endif-%}{%-if sec.bullets -%},{\"type\":\"Col\",\"gap\":1,\"children\":[{%- set _c -%}{%-for b in sec.bullets -%}{%-set i = loop.index0 -%},{\"type\":\"Row\",\"key\":{{ ((idx ~ \"-b-\" ~ i)) | tojson }},\"gap\":2,\"align\":\"start\",\"children\":[{\"type\":\"Box\",\"width\":2,\"height\":2,\"radius\":\"full\",\"background\":\"alpha-10\"},{\"type\":\"Text\",\"value\":{{ (b) | tojson }},\"size\":\"sm\"}]}{%-endfor-%}{%- endset -%}{{- (_c[1:] if _c and _c[0] == ',' else _c) -}}]}{%-else-%}{%-endif-%}{%-if sec.questions -%},{\"type\":\"Col\",\"gap\":3,\"children\":[{%- set _c -%}{%-for q in sec.questions -%},{\"type\":\"Col\",\"key\":{{ (q.id | string) | tojson }},\"gap\":1,\"children\":[{\"type\":\"Text\",\"value\":{{ (q.question) | tojson }},\"size\":\"sm\",\"weight\":\"semibold\"},{\"type\":\"Col\",\"gap\":0,\"children\":[{%- set _c -%}{%-for c in q.choices -%}{%-set i = loop.index0 -%},{\"type\":\"Text\",\"key\":{{ ((q.id ~ \"-\" ~ i)) | tojson }},\"value\":{{ (c) | tojson }},\"size\":\"sm\",\"color\":\"secondary\"}{%-endfor-%}{%- endset -%}{{- (_c[1:] if _c and _c[0] == ',' else _c) -}}]},{\"type\":\"Badge\",\"label\":{{ ((\"Correct: \" ~ q.correct)) | tojson }},\"color\":\"info\"}]}{%-endfor-%}{%- endset -%}{{- (_c[1:] if _c and _c[0] == ',' else _c) -}}]}{%-else-%}{%-endif-%},{\"type\":\"Divider\"}{%- endset -%}{{- (_c[1:] if _c and _c[0] == ',' else _c) -}}]}{%-endfor-%},{\"type\":\"Caption\",\"value\":\"Next steps\"},{\"type\":\"Col\",\"gap\":1,\"children\":[{%- set _c -%}{%-for s in payload.next_steps -%}{%-set i = loop.index0 -%},{\"type\":\"Row\",\"key\":{{ ((\"ns-\" ~ i)) | tojson }},\"gap\":2,\"align\":\"start\",\"children\":[{\"type\":\"Icon\",\"name\":\"chevron-right\",\"size\":\"sm\"},{\"type\":\"Text\",\"value\":{{ (s) | tojson }},\"size\":\"sm\"}]}{%-endfor-%}{%- endset -%}{{- (_c[1:] if _c and _c[0] == ',' else _c) -}}]}{%- endset -%}{{- (_c[1:] if _c and _c[0] == ',' else _c) -}}]}]}",
+  "jsonSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "payload": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                },
+                "bullets": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "questions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "question": {
+                        "type": "string"
+                      },
+                      "choices": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "correct": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "question",
+                      "choices",
+                      "correct"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "next_steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "title",
+          "sections",
+          "next_steps"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "payload"
+    ],
+    "additionalProperties": false
+  },
+  "outputJsonPreview": {
+    "type": "Card",
+    "size": "sm",
+    "children": [
+      {
+        "type": "Col",
+        "gap": 2,
+        "children": [
+          {
+            "type": "Title",
+            "value": "Doctrine not provided",
+            "size": "md"
+          },
+          {
+            "type": "Col",
+            "key": "0",
+            "gap": 2,
+            "children": [
+              {
+                "type": "Caption",
+                "value": "Explanation"
+              },
+              {
+                "type": "Text",
+                "value": "No doctrine or context was provided. Unable to teach this topic without official material.",
+                "size": "sm",
+                "color": "secondary"
+              },
+              {
+                "type": "Divider"
+              }
+            ]
+          },
+          {
+            "type": "Col",
+            "key": "1",
+            "gap": 2,
+            "children": [
+              {
+                "type": "Caption",
+                "value": "Practical Examples"
+              },
+              {
+                "type": "Text",
+                "value": "Not available until doctrine text or references are supplied.",
+                "size": "sm",
+                "color": "secondary"
+              },
+              {
+                "type": "Divider"
+              }
+            ]
+          },
+          {
+            "type": "Col",
+            "key": "2",
+            "gap": 2,
+            "children": [
+              {
+                "type": "Caption",
+                "value": "Key Points"
+              },
+              {
+                "type": "Col",
+                "gap": 1,
+                "children": [
+                  {
+                    "type": "Row",
+                    "key": "2-b-0",
+                    "gap": 2,
+                    "align": "start",
+                    "children": [
+                      {
+                        "type": "Box",
+                        "width": 2,
+                        "height": 2,
+                        "radius": "full",
+                        "background": "alpha-10"
+                      },
+                      {
+                        "type": "Text",
+                        "value": "No doctrine provided",
+                        "size": "sm"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Row",
+                    "key": "2-b-1",
+                    "gap": 2,
+                    "align": "start",
+                    "children": [
+                      {
+                        "type": "Box",
+                        "width": 2,
+                        "height": 2,
+                        "radius": "full",
+                        "background": "alpha-10"
+                      },
+                      {
+                        "type": "Text",
+                        "value": "Share SOP/SOG, NFPA/NIMS, or agency doctrine",
+                        "size": "sm"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Row",
+                    "key": "2-b-2",
+                    "gap": 2,
+                    "align": "start",
+                    "children": [
+                      {
+                        "type": "Box",
+                        "width": 2,
+                        "height": 2,
+                        "radius": "full",
+                        "background": "alpha-10"
+                      },
+                      {
+                        "type": "Text",
+                        "value": "Then I can teach the topic accurately",
+                        "size": "sm"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Divider"
+              }
+            ]
+          },
+          {
+            "type": "Col",
+            "key": "3",
+            "gap": 2,
+            "children": [
+              {
+                "type": "Caption",
+                "value": "Mini Quiz"
+              },
+              {
+                "type": "Col",
+                "gap": 3,
+                "children": [
+                  {
+                    "type": "Col",
+                    "key": "q1",
+                    "gap": 1,
+                    "children": [
+                      {
+                        "type": "Text",
+                        "value": "Can lessons be created without doctrine?",
+                        "size": "sm",
+                        "weight": "semibold"
+                      },
+                      {
+                        "type": "Col",
+                        "gap": 0,
+                        "children": [
+                          {
+                            "type": "Text",
+                            "key": "q1-0",
+                            "value": "A) Yes, improvise",
+                            "size": "sm",
+                            "color": "secondary"
+                          },
+                          {
+                            "type": "Text",
+                            "key": "q1-1",
+                            "value": "B) No, use provided doctrine only",
+                            "size": "sm",
+                            "color": "secondary"
+                          },
+                          {
+                            "type": "Text",
+                            "key": "q1-2",
+                            "value": "C) Only if time is short",
+                            "size": "sm",
+                            "color": "secondary"
+                          },
+                          {
+                            "type": "Text",
+                            "key": "q1-3",
+                            "value": "D) Use random web sources",
+                            "size": "sm",
+                            "color": "secondary"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Badge",
+                        "label": "Correct: B",
+                        "color": "info"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Col",
+                    "key": "q2",
+                    "gap": 1,
+                    "children": [
+                      {
+                        "type": "Text",
+                        "value": "What should you send next?",
+                        "size": "sm",
+                        "weight": "semibold"
+                      },
+                      {
+                        "type": "Col",
+                        "gap": 0,
+                        "children": [
+                          {
+                            "type": "Text",
+                            "key": "q2-0",
+                            "value": "A) Opinions",
+                            "size": "sm",
+                            "color": "secondary"
+                          },
+                          {
+                            "type": "Text",
+                            "key": "q2-1",
+                            "value": "B) News articles",
+                            "size": "sm",
+                            "color": "secondary"
+                          },
+                          {
+                            "type": "Text",
+                            "key": "q2-2",
+                            "value": "C) Official doctrine text or citations",
+                            "size": "sm",
+                            "color": "secondary"
+                          },
+                          {
+                            "type": "Text",
+                            "key": "q2-3",
+                            "value": "D) Nothing",
+                            "size": "sm",
+                            "color": "secondary"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Badge",
+                        "label": "Correct: C",
+                        "color": "info"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Divider"
+              }
+            ]
+          },
+          {
+            "type": "Caption",
+            "value": "Next steps"
+          },
+          {
+            "type": "Col",
+            "gap": 1,
+            "children": [
+              {
+                "type": "Row",
+                "key": "ns-0",
+                "gap": 2,
+                "align": "start",
+                "children": [
+                  {
+                    "type": "Icon",
+                    "name": "chevron-right",
+                    "size": "sm"
+                  },
+                  {
+                    "type": "Text",
+                    "value": "Provide official doctrine or citations for the topic.",
+                    "size": "sm"
+                  }
+                ]
+              },
+              {
+                "type": "Row",
+                "key": "ns-1",
+                "gap": 2,
+                "align": "start",
+                "children": [
+                  {
+                    "type": "Icon",
+                    "name": "chevron-right",
+                    "size": "sm"
+                  },
+                  {
+                    "type": "Text",
+                    "value": "Flag objectives to cover and scenarios to practice.",
+                    "size": "sm"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "encodedWidget": "eyJpZCI6IjIwOTBlYzU5LWM4YjgtNDYzZS1iZjFhLWZlZTc2NzUyNjlkOSIsIm5hbWUiOiJGaXJlIERvY3RyaW5lIFN0dWR5IENhcmQiLCJ2aWV3IjoiPENhcmQgc2l6ZT1cInNtXCI-XG4gIDxDb2wgZ2FwPXsyfT5cbiAgICA8VGl0bGUgdmFsdWU9e3BheWxvYWQudGl0bGV9IHNpemU9XCJtZFwiIC8-XG5cbiAgICB7cGF5bG9hZC5zZWN0aW9ucy5tYXAoKHNlYywgaWR4KSA9PiAoXG4gICAgICA8Q29sIGtleT17YCR7aWR4fWB9IGdhcD17Mn0-XG4gICAgICAgIDxDYXB0aW9uIHZhbHVlPXtzZWMubGFiZWx9IC8-XG4gICAgICAgIHtzZWMuY29udGVudCAmJiAoXG4gICAgICAgICAgPFRleHQgdmFsdWU9e3NlYy5jb250ZW50fSBzaXplPVwic21cIiBjb2xvcj1cInNlY29uZGFyeVwiIC8-XG4gICAgICAgICl9XG5cbiAgICAgICAge3NlYy5idWxsZXRzICYmIChcbiAgICAgICAgICA8Q29sIGdhcD17MX0-XG4gICAgICAgICAgICB7c2VjLmJ1bGxldHMubWFwKChiLCBpKSA9PiAoXG4gICAgICAgICAgICAgIDxSb3cga2V5PXtgJHtpZHh9LWItJHtpfWB9IGdhcD17Mn0gYWxpZ249XCJzdGFydFwiPlxuICAgICAgICAgICAgICAgIDxCb3ggd2lkdGg9ezJ9IGhlaWdodD17Mn0gcmFkaXVzPVwiZnVsbFwiIGJhY2tncm91bmQ9XCJhbHBoYS0xMFwiIC8-XG4gICAgICAgICAgICAgICAgPFRleHQgdmFsdWU9e2J9IHNpemU9XCJzbVwiIC8-XG4gICAgICAgICAgICAgIDwvUm93PlxuICAgICAgICAgICAgKSl9XG4gICAgICAgICAgPC9Db2w-XG4gICAgICAgICl9XG5cbiAgICAgICAge3NlYy5xdWVzdGlvbnMgJiYgKFxuICAgICAgICAgIDxDb2wgZ2FwPXszfT5cbiAgICAgICAgICAgIHtzZWMucXVlc3Rpb25zLm1hcCgocSkgPT4gKFxuICAgICAgICAgICAgICA8Q29sIGtleT17cS5pZH0gZ2FwPXsxfT5cbiAgICAgICAgICAgICAgICA8VGV4dCB2YWx1ZT17cS5xdWVzdGlvbn0gc2l6ZT1cInNtXCIgd2VpZ2h0PVwic2VtaWJvbGRcIiAvPlxuICAgICAgICAgICAgICAgIDxDb2wgZ2FwPXswfT5cbiAgICAgICAgICAgICAgICAgIHtxLmNob2ljZXMubWFwKChjLCBpKSA9PiAoXG4gICAgICAgICAgICAgICAgICAgIDxUZXh0XG4gICAgICAgICAgICAgICAgICAgICAga2V5PXtgJHtxLmlkfS0ke2l9YH1cbiAgICAgICAgICAgICAgICAgICAgICB2YWx1ZT17Y31cbiAgICAgICAgICAgICAgICAgICAgICBzaXplPVwic21cIlxuICAgICAgICAgICAgICAgICAgICAgIGNvbG9yPVwic2Vjb25kYXJ5XCJcbiAgICAgICAgICAgICAgICAgICAgLz5cbiAgICAgICAgICAgICAgICAgICkpfVxuICAgICAgICAgICAgICAgIDwvQ29sPlxuICAgICAgICAgICAgICAgIDxCYWRnZSBsYWJlbD17YENvcnJlY3Q6ICR7cS5jb3JyZWN0fWB9IGNvbG9yPVwiaW5mb1wiIC8-XG4gICAgICAgICAgICAgIDwvQ29sPlxuICAgICAgICAgICAgKSl9XG4gICAgICAgICAgPC9Db2w-XG4gICAgICAgICl9XG4gICAgICAgIDxEaXZpZGVyIC8-XG4gICAgICA8L0NvbD5cbiAgICApKX1cblxuICAgIDxDYXB0aW9uIHZhbHVlPVwiTmV4dCBzdGVwc1wiIC8-XG4gICAgPENvbCBnYXA9ezF9PlxuICAgICAge3BheWxvYWQubmV4dF9zdGVwcy5tYXAoKHMsIGkpID0-IChcbiAgICAgICAgPFJvdyBrZXk9e2Bucy0ke2l9YH0gZ2FwPXsyfSBhbGlnbj1cInN0YXJ0XCI-XG4gICAgICAgICAgPEljb24gbmFtZT1cImNoZXZyb24tcmlnaHRcIiBzaXplPVwic21cIiAvPlxuICAgICAgICAgIDxUZXh0IHZhbHVlPXtzfSBzaXplPVwic21cIiAvPlxuICAgICAgICA8L1Jvdz5cbiAgICAgICkpfVxuICAgIDwvQ29sPlxuICA8L0NvbD5cbjwvQ2FyZD4iLCJkZWZhdWx0U3RhdGUiOnsicGF5bG9hZCI6eyJ0aXRsZSI6IkRvY3RyaW5lIG5vdCBwcm92aWRlZCIsInNlY3Rpb25zIjpbeyJsYWJlbCI6IkV4cGxhbmF0aW9uIiwiY29udGVudCI6Ik5vIGRvY3RyaW5lIG9yIGNvbnRleHQgd2FzIHByb3ZpZGVkLiBVbmFibGUgdG8gdGVhY2ggdGhpcyB0b3BpYyB3aXRob3V0IG9mZmljaWFsIG1hdGVyaWFsLiJ9LHsibGFiZWwiOiJQcmFjdGljYWwgRXhhbXBsZXMiLCJjb250ZW50IjoiTm90IGF2YWlsYWJsZSB1bnRpbCBkb2N0cmluZSB0ZXh0IG9yIHJlZmVyZW5jZXMgYXJlIHN1cHBsaWVkLiJ9LHsibGFiZWwiOiJLZXkgUG9pbnRzIiwiYnVsbGV0cyI6WyJObyBkb2N0cmluZSBwcm92aWRlZCIsIlNoYXJlIFNPUC9TT0csIE5GUEEvTklNUywgb3IgYWdlbmN5IGRvY3RyaW5lIiwiVGhlbiBJIGNhbiB0ZWFjaCB0aGUgdG9waWMgYWNjdXJhdGVseSJdfSx7ImxhYmVsIjoiTWluaSBRdWl6IiwicXVlc3Rpb25zIjpbeyJpZCI6InExIiwicXVlc3Rpb24iOiJDYW4gbGVzc29ucyBiZSBjcmVhdGVkIHdpdGhvdXQgZG9jdHJpbmU_IiwiY2hvaWNlcyI6WyJBKSBZZXMsIGltcHJvdmlzZSIsIkIpIE5vLCB1c2UgcHJvdmlkZWQgZG9jdHJpbmUgb25seSIsIkMpIE9ubHkgaWYgdGltZSBpcyBzaG9ydCIsIkQpIFVzZSByYW5kb20gd2ViIHNvdXJjZXMiXSwiY29ycmVjdCI6IkIifSx7ImlkIjoicTIiLCJxdWVzdGlvbiI6IldoYXQgc2hvdWxkIHlvdSBzZW5kIG5leHQ_IiwiY2hvaWNlcyI6WyJBKSBPcGluaW9ucyIsIkIpIE5ld3MgYXJ0aWNsZXMiLCJDKSBPZmZpY2lhbCBkb2N0cmluZSB0ZXh0IG9yIGNpdGF0aW9ucyIsIkQpIE5vdGhpbmciXSwiY29ycmVjdCI6IkMifV19XSwibmV4dF9zdGVwcyI6WyJQcm92aWRlIG9mZmljaWFsIGRvY3RyaW5lIG9yIGNpdGF0aW9ucyBmb3IgdGhlIHRvcGljLiIsIkZsYWcgb2JqZWN0aXZlcyB0byBjb3ZlciBhbmQgc2NlbmFyaW9zIHRvIHByYWN0aWNlLiJdfX0sInN0YXRlcyI6W10sInNjaGVtYSI6ImltcG9ydCB7IHogfSBmcm9tIFwiem9kXCJcblxuY29uc3QgUXVlc3Rpb24gPSB6LnN0cmljdE9iamVjdCh7XG4gIGlkOiB6LnN0cmluZygpLFxuICBxdWVzdGlvbjogei5zdHJpbmcoKSxcbiAgY2hvaWNlczogei5hcnJheSh6LnN0cmluZygpKSxcbiAgY29ycmVjdDogei5zdHJpbmcoKSxcbn0pXG5cbmNvbnN0IFNlY3Rpb24gPSB6LnN0cmljdE9iamVjdCh7XG4gIGxhYmVsOiB6LnN0cmluZygpLFxuICBjb250ZW50OiB6LnN0cmluZygpLm9wdGlvbmFsKCksXG4gIGJ1bGxldHM6IHouYXJyYXkoei5zdHJpbmcoKSkub3B0aW9uYWwoKSxcbiAgcXVlc3Rpb25zOiB6LmFycmF5KFF1ZXN0aW9uKS5vcHRpb25hbCgpLFxufSlcblxuY29uc3QgUGF5bG9hZCA9IHouc3RyaWN0T2JqZWN0KHtcbiAgdGl0bGU6IHouc3RyaW5nKCksXG4gIHNlY3Rpb25zOiB6LmFycmF5KFNlY3Rpb24pLFxuICBuZXh0X3N0ZXBzOiB6LmFycmF5KHouc3RyaW5nKCkpLFxufSlcblxuY29uc3QgV2lkZ2V0U3RhdGUgPSB6LnN0cmljdE9iamVjdCh7XG4gIHBheWxvYWQ6IFBheWxvYWQsXG59KVxuXG5leHBvcnQgZGVmYXVsdCBXaWRnZXRTdGF0ZSIsImpzb25TY2hlbWEiOnt9LCJzY2hlbWFNb2RlIjoiem9kIiwic2NoZW1hVmFsaWRpdHkiOiJ2YWxpZCIsInZpZXdWYWxpZGl0eSI6InZhbGlkIiwiZGVmYXVsdFN0YXRlVmFsaWRpdHkiOiJ2YWxpZCJ9"
+}

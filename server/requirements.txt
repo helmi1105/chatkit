@@ -1,0 +1,4 @@
+openai-chatkit
+fastapi
+openai-agents
+uvicorn
