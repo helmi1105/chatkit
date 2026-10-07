@@ -20,7 +20,9 @@ PDF course material
 
 ## Features
 
-- PDF-grounded generation with OpenAI file search.
+- Course-grounded generation from local course passages, with optional OpenAI file search on supported paths.
+- Public username/password registration, login and logout.
+- Conversations and learning progress saved per authenticated learner ID.
 - KC-based course navigation using `server/app/kc_graph1.json`.
 - Diagnostic QCM for learner-level estimation.
 - Adaptive micro-lessons based on learner state.
@@ -52,7 +54,13 @@ server/app/orchestrator.py
   ITS workflow, agents, learner model, pedagogical controller
 
 server/app/data_store.py
-  In-memory threads/messages and local image attachment storage
+  Per-learner threads/messages persisted through the state store; local image attachments
+
+server/app/auth.py
+  Accounts, password hashing, browser sessions and optional account creation CLI
+
+server/app/storage.py
+  Local or S3-compatible persistence for accounts, learner state and events
 
 server/app/widgets/
   ChatKit widgets for QCM, study cards, maps, Plotly, and radar
@@ -78,10 +86,11 @@ docs/learner_guide.md
 
 ## Requirements
 
-- Python 3.10+
-- Node.js 18+
-- OpenAI API key
-- OpenAI vector store containing the instructional PDF
+- Python 3.11+ (the backend Docker image uses Python 3.11).
+- Node.js 20+ (the frontend Docker image uses Node.js 20).
+- A Mistral key for the default tutoring provider, or an OpenAI key when using OpenAI.
+- An OpenAI key for image analysis and the dedicated free-question answering path, even when Mistral is selected for tutoring.
+- An OpenAI vector store only for paths using hosted file search; image retrieval uses local course passages.
 
 Backend dependencies are listed in:
 
@@ -97,39 +106,45 @@ web/package.json
 
 ## Configuration
 
-Set environment variables before running the backend:
+The examples below use **Git Bash on Windows**, from the project root. Set keys
+in the same terminal that starts the backend; do not commit real keys.
 
-```powershell
-$env:OPENAI_API_KEY="sk-..."
-$env:PYTHONPATH="server"
+```bash
+export DEFAULT_PROVIDER="mistral"
+export MISTRAL_API_KEY="YOUR_MISTRAL_KEY"
+export OPENAI_API_KEY="YOUR_OPENAI_KEY"
 ```
 
-Optional:
+The default Mistral model is `mistral/mistral-large-latest`. Set `MISTRAL_MODEL`
+to a model available to your account if necessary. For OpenAI tutoring, set
+`DEFAULT_PROVIDER=openai`; the default `OPENAI_MODEL` is `gpt-4.1`.
+The chat settings also allow provider selection and an optional personal key.
 
-```powershell
-$env:VECTOR_STORE_ID="vs_..."
-$env:PUBLIC_BASE_URL="http://127.0.0.1:8000"
+Optional backend settings:
+
+```bash
+export VECTOR_STORE_ID="YOUR_VECTOR_STORE_ID"
+export PUBLIC_BASE_URL="http://127.0.0.1:8000"
 ```
 
-If `VECTOR_STORE_ID` is not provided, the default value in `server/app/orchestrator.py` is used.
+`VECTOR_STORE_ID` applies to hosted file-search paths; configure your own store
+when using them. `PUBLIC_BASE_URL` is used for public course asset links.
 
 ## Installation
 
 Backend:
 
-```powershell
-cd server
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-cd ..
+```bash
+python -m venv server/.venv
+source server/.venv/Scripts/activate
+python -m pip install -r server/requirements.txt
 ```
 
 Frontend:
 
-```powershell
+```bash
 cd web
-cmd.exe /c npm install
+npm install
 cd ..
 ```
 
@@ -137,16 +152,16 @@ cd ..
 
 Backend:
 
-```powershell
-$env:PYTHONPATH="server"
-server\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```bash
+source server/.venv/Scripts/activate
+python -m uvicorn app.main:app --app-dir server --host 127.0.0.1 --port 8000
 ```
 
-Frontend:
+Frontend, in a second terminal from the project root:
 
-```powershell
+```bash
 cd web
-cmd.exe /c npm run dev
+npm run dev
 ```
 
 Open:
@@ -155,7 +170,9 @@ Open:
 http://localhost:3000
 ```
 
-If port `3000` is busy, Next.js may use another port such as `3001`.
+If Next.js uses another port such as `3001`, add that exact frontend origin to
+the backend's `ALLOWED_ORIGINS` and restart the backend. The defaults allow
+`http://localhost:3000` and `http://127.0.0.1:3000`.
 
 ## Learner Commands
 
@@ -184,7 +201,115 @@ start diagnostic
 -> radar
 ```
 
+## Learner accounts
+
+Select **Créer un compte**, enter a username and password, and registration signs
+you in automatically. Usernames are case-insensitive and contain 3–64 letters,
+digits, dots, underscores or hyphens. Passwords require at least **4 characters**;
+letters, digits or a mix are accepted. Existing users select **Se connecter**.
+
+Conversations and progress are linked to the authenticated permanent user ID,
+so signing into the same account restores them across browsers. Passwords are
+salted and hashed; the browser uses an HttpOnly session cookie. **Se déconnecter**
+revokes that session. If `ACCESS_CODE` is configured, it remains an additional
+shared gate for learning access.
+
+Administrators can optionally run `python -m app.auth learner_001` from `server/`
+with the virtual environment active. See [account setup](server/ACCOUNTS.md)
+for linking existing anonymous progress and storage configuration.
+
+## Response timeouts
+
+Model calls have a 90-second deadline (including queueing and retries), configurable
+with `LLM_TIMEOUT_SECONDS`. A complete tutor response has a 180-second deadline,
+configurable with `CHAT_RESPONSE_TIMEOUT_SECONDS`. The browser also aborts requests
+that have not completed after 210 seconds, including stalled response streams.
+Keep the server deadlines below this browser limit. Timeouts show a retry message;
+closing a response stream cancels its pending asynchronous generation task.
+
+## Deployment settings
+
+The frontend calls `/backend/*` through a Next.js proxy so login cookies remain
+on the frontend origin. Set `CHATKIT_BACKEND_URL` (or the existing
+`NEXT_PUBLIC_CHATKIT_API_URL` Docker build argument) to the backend address before
+building the frontend. Its local default is `http://127.0.0.1:8000`.
+
+On the production backend, configure:
+
+```bash
+export ALLOWED_ORIGINS="https://YOUR-FRONTEND-HOST"
+export AUTH_COOKIE_SECURE="true"
+export PUBLIC_BASE_URL="https://YOUR-BACKEND-HOST"
+```
+
+Use an explicit frontend origin rather than `*`, and serve production over HTTPS.
+Accounts and learning state use the configured S3 backend or local `app/data/`;
+local container data requires persistent storage to survive replacement.
+See [account deployment details](server/ACCOUNTS.md) and [Scaleway deployment](DEPLOY_SCALEWAY.md).
+
 ## Image Upload
+
+Image questions follow three steps:
+
+1. Observe visible shapes, colours, lettering and relationships without assigning a domain meaning yet.
+2. Search the entire course separately for each observed element, retaining source page numbers.
+3. Explain using the original image, observations, your question and relevant course passages, with instructions to cite pages and acknowledge uncertainty.
+
+Both model stages use **OpenAI**, even when Mistral is selected for tutoring.
+`OPENAI_INVENTORY_MODEL` and `OPENAI_VISUAL_EXPLANATION_MODEL` both default to
+`gpt-5.4`. They use the server's `OPENAI_API_KEY`, or a personal OpenAI key when
+OpenAI is selected. A personal Mistral key cannot be used for these stages.
+
+The default retrieval mode is **`VISUAL_RETRIEVAL_MODE=bm25`**, using local keyword
+search without embedding requests. Reference passages come from
+`doctrine_pages.json` and optional OCR content. Set `VISUAL_RETRIEVAL_MODE=hybrid`
+to combine BM25 with OpenAI embeddings (default `text-embedding-3-small`). In
+hybrid mode, course text and image descriptions are sent to the embeddings API;
+embeddings do not process image pixels.
+
+Prompts and implementation:
+
+- Observation: `OBSERVE_INSTRUCTIONS` in [visual_retrieval.py](server/app/visual_retrieval.py).
+- Retrieval: `retrieve_visual_evidence()` in the same file.
+- Explanation: `INSTR_VISUAL` and `_answer_visual_question()` in [orchestrator.py](server/app/orchestrator.py).
+- Model selection: [providers.py](server/app/providers.py).
+
+To enable optional hybrid retrieval and prepare its index (Git Bash, project root):
+
+```bash
+source server/.venv/Scripts/activate
+export OPENAI_EMBEDDING_API_KEY="YOUR_OPENAI_API_KEY"
+export VISUAL_RETRIEVAL_MODE="hybrid"
+export PYTHONPATH="server"
+python -m app.prepare_embeddings
+python -m uvicorn app.main:app --app-dir server --host 127.0.0.1 --port 8000
+```
+
+`OPENAI_API_KEY` is also accepted when `OPENAI_EMBEDDING_API_KEY` is unset.
+The chat's optional personal API key is not used for embeddings. In particular,
+a Mistral key cannot pay for OpenAI embeddings. Embedding errors identify retrieval
+separately from the selected answering provider.
+
+Course vectors are cached under `server/app/data/openai_embeddings/`, separately
+from any old E5 cache. Set `OPENAI_EMBEDDING_CACHE_DIR` to change the directory.
+The cache is rebuilt when the course content or `OPENAI_EMBEDDING_MODEL` changes.
+Restart the backend after editing the course. Query descriptions are batched
+(up to 32 per request). In hybrid mode, after indexing, an image question normally makes two
+vision/generation calls plus one embedding request; larger inventories and retries
+can add requests. Initial indexing also makes embedding requests, billed by OpenAI.
+No hosted vector store or local E5/PyTorch model is used.
+
+Hybrid retrieval failures do not silently switch to BM25.
+Retrieved candidates are not proof: the answering model must check them against
+the image and cite supporting pages or acknowledge uncertainty.
+
+Offline checks, from `server/`:
+
+```bash
+./.venv/Scripts/python.exe -m unittest test_embeddings test_visual_retrieval -v
+```
+
+API reference: https://developers.openai.com/api/docs/guides/embeddings
 
 The frontend enables ChatKit attachments with a two-phase upload strategy.
 
@@ -261,6 +386,11 @@ It checks:
 
 ## Evidence Logs
 
+New learning and feedback events include `user_id` and `username`. Existing older
+events are not rewritten. Conversations are saved under `threads/<user_id>.json`
+and progress under `sessions/<user_id>.json` in the configured state backend.
+Events are also written to that backend under `events/`.
+
 The system records tutoring events in:
 
 ```text
@@ -278,6 +408,17 @@ Examples of logged events:
 - `visual_question_answered`
 - `module_checkpoint_started`
 - `module_checkpoint_submitted`
+
+## Files excluded from Git
+
+The repository's `.gitignore` excludes `.env` files, local accounts and learner
+state in `server/app/data/`, `server/app/evidence_log.jsonl`, uploaded images,
+generated flashcard images, virtual environments and build output. Keep API keys
+in environment variables. Custom storage directories need their own ignore rules.
+
+For the application-only push, also exclude `server/simulation/`, `server/ecg/`
+and `server/benchmark_pilot/` when staging. Those three exclusions are a staging
+choice, not a claim that all three folders are covered by `.gitignore`.
 
 ## Research Framing
 

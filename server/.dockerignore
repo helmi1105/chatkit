@@ -3,3 +3,9 @@
 **/*.pyc
 .git
 data_storebackup.py
+app/data/
+app/uploads/
+app/evidence_log.jsonl
+app/generated_flashcards/
+.env
+.env.*

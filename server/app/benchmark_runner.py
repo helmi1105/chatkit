@@ -76,8 +76,10 @@ def evaluate(events: list[dict[str, Any]]) -> dict[str, Any]:
         profile_values = list(get_mastery_values(event, "diagnostic_profile"))
         before = event.get("mastery_before") if isinstance(event.get("mastery_before"), dict) else {}
         after = event.get("mastery_after") if isinstance(event.get("mastery_after"), dict) else {}
-        mastery_unchanged = before == after or event.get("mastery_update") == "none_from_diagnostic"
+        mastery_unchanged = before == after
         profile_capped = bool(profile_values) and max(profile_values) <= DIAGNOSTIC_MAX_MASTERY + 1e-9
+        if event.get('mode') == 'hierarchical':
+            profile_capped = not profile_values and bool(event.get('statuses'))
         if mastery_unchanged and profile_capped:
             diagnostic_cap_ok += 1
         else:

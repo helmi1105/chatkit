@@ -14,16 +14,19 @@ acceptable for a visual question asked and answered in the same session."""
 from __future__ import annotations
 
 import asyncio
+import base64
 import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 from typing import Any, Dict, List, Optional
 
 from chatkit.store import AttachmentStore, NotFoundError, Store
 from chatkit.types import (
     Attachment,
     AttachmentCreateParams,
+    AttachmentUploadDescriptor,
     ImageAttachment,
     Page,
     ThreadItem,
@@ -60,6 +63,7 @@ class MyDataStore(Store[dict[str, Any]], AttachmentStore[dict[str, Any]]):
         self._users: Dict[str, _UserState] = {}
         self._attachments: Dict[str, Attachment] = {}
         self._attachment_paths: Dict[str, Path] = {}
+        self._attachment_owners: Dict[str, str] = {}
         self._state = state_store()
         UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -143,9 +147,18 @@ class MyDataStore(Store[dict[str, Any]], AttachmentStore[dict[str, Any]]):
         state = self._get_user_state(user_id).threads.get(thread_id)
         if not state:
             raise NotFoundError(f"Thread {thread_id} not found")
-        return state.thread.model_copy(deep=True)
+        return self._with_image_origin(state.thread.model_copy(deep=True))
+
+    @staticmethod
+    def _with_image_origin(thread: ThreadMetadata) -> ThreadMetadata:
+        parsed = urlparse(os.getenv('PUBLIC_BASE_URL', 'http://127.0.0.1:8000'))
+        if parsed.scheme in {'http', 'https'} and parsed.netloc:
+            origin = f'{parsed.scheme}://{parsed.netloc}'
+            thread.allowed_image_domains = list(dict.fromkeys([*(thread.allowed_image_domains or []), origin]))
+        return thread
 
     async def save_thread(self, thread: ThreadMetadata, context: dict[str, Any]) -> None:
+        self._with_image_origin(thread)
         user_id = self._get_user_id(context)
         user_state = self._get_user_state(user_id)
         state = user_state.threads.get(thread.id)
@@ -158,7 +171,7 @@ class MyDataStore(Store[dict[str, Any]], AttachmentStore[dict[str, Any]]):
     async def load_threads(self, limit: int, after: str | None, order: str, context: dict[str, Any]) -> Page[ThreadMetadata]:
         user_id = self._get_user_id(context)
         threads = sorted(
-            (state.thread for state in self._get_user_state(user_id).threads.values()),
+            (self._with_image_origin(state.thread) for state in self._get_user_state(user_id).threads.values()),
             key=lambda t: t.created_at or datetime.min,
             reverse=(order == "desc"),
         )
@@ -239,15 +252,21 @@ class MyDataStore(Store[dict[str, Any]], AttachmentStore[dict[str, Any]]):
         attachment_id = self.generate_attachment_id(input.mime_type, context)
         filename = f"{attachment_id}{self._attachment_extension(input.name, input.mime_type)}"
         path = UPLOAD_DIR / filename
+        frontend_base = str(context.get('frontend_origin') or 'http://localhost:3000').rstrip('/') + '/backend'
         attachment = ImageAttachment(
             id=attachment_id,
             name=input.name,
             mime_type=input.mime_type,
-            upload_url=f"{PUBLIC_BASE_URL}/attachments/{attachment_id}/upload",
-            preview_url=f"{PUBLIC_BASE_URL}/static/uploads/{filename}",
+            upload_descriptor=AttachmentUploadDescriptor(
+                url=f"{frontend_base}/attachments/{attachment_id}/upload",
+                method="PUT",
+                headers={"Content-Type": input.mime_type, "X-ChatKit-Request": "1"},
+            ),
+            preview_url=f"{frontend_base}/static/uploads/{filename}",
         )
         self._attachments[attachment_id] = attachment
         self._attachment_paths[attachment_id] = path
+        self._attachment_owners[attachment_id] = self._get_user_id(context)
         return attachment
 
     async def upload_attachment_bytes(self, attachment_id: str, content: bytes, content_type: str | None = None) -> None:
@@ -258,18 +277,28 @@ class MyDataStore(Store[dict[str, Any]], AttachmentStore[dict[str, Any]]):
         if len(content) > MAX_IMAGE_ATTACHMENT_BYTES:
             raise ValueError("Image trop lourde (5 Mo maximum).")
         path.write_bytes(content)
-        self._attachments[attachment_id] = attachment.model_copy(update={"upload_url": None})
+        # The hosted ChatKit iframe cannot use our first-party session cookie.
+        # Return the preview inline after an authenticated upload instead.
+        preview = 'data:' + attachment.mime_type + ';base64,' + base64.b64encode(content).decode('ascii')
+        self._attachments[attachment_id] = attachment.model_copy(update={"upload_descriptor": None, "preview_url": preview})
 
     async def save_attachment(self, attachment: Attachment, context: dict[str, Any]) -> None:
+        if self._attachment_owners.get(attachment.id) != self._get_user_id(context):
+            raise NotFoundError(f"Attachment {attachment.id} not found")
         self._attachments[attachment.id] = attachment
 
     async def load_attachment(self, attachment_id: str, context: dict[str, Any]) -> Attachment:
+        if self._attachment_owners.get(attachment_id) != self._get_user_id(context):
+            raise NotFoundError(f"Attachment {attachment_id} not found")
         attachment = self._attachments.get(attachment_id)
         if attachment is None:
             raise NotFoundError(f"Attachment {attachment_id} not found")
-        return attachment.model_copy(update={"upload_url": None})
+        return attachment.model_copy(update={"upload_descriptor": None})
 
     async def delete_attachment(self, attachment_id: str, context: dict[str, Any]) -> None:
+        if self._attachment_owners.get(attachment_id) != self._get_user_id(context):
+            raise NotFoundError(f"Attachment {attachment_id} not found")
+        self._attachment_owners.pop(attachment_id, None)
         path = self._attachment_paths.pop(attachment_id, None)
         self._attachments.pop(attachment_id, None)
         if path and path.exists():

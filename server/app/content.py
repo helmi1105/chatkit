@@ -4,9 +4,9 @@ grounding (injected in the prompt), page images for display, and a small
 BM25 index for free questions.
 
 Two sources, best first:
-  1. doctrine_pages.json -- structured transcription by a vision model
-     (transcribe_pages.py), reviewed by trainers. Carries what the OCR loses:
-     shape -> meaning, colour swatches -> colour names, tables, rules.
+  1. doctrine_pages.json -- PDF embedded text plus conservative visual notes.
+     Per-page verification metadata records the audit scope; assistant review
+     is not trainer approval. Complex diagrams still require the original PDF.
   2. doctrine_chunks.json -- Tesseract OCR precomputed at Docker build
      (build_doctrine_index.py), text only.
 
@@ -17,6 +17,7 @@ the free Mistral tier (cahier 2026-09-15)."""
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 from functools import lru_cache
@@ -73,6 +74,13 @@ def _format_structured_page(item: Dict[str, Any]) -> str:
         for row in tb.get("rows") or []:
             if isinstance(row, list):
                 lines.append("  - " + " | ".join(str(c) for c in row))
+        for entry in tb.get("entries") or []:
+            if isinstance(entry, dict):
+                lines.append("  - " + " | ".join(
+                    f"{key}: {value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)}"
+                    for key, value in entry.items()))
+            elif isinstance(entry, (str, list)):
+                lines.append("  - " + (entry if isinstance(entry, str) else " | ".join(map(str, entry))))
     rules = [str(r).strip() for r in (item.get("rules") or []) if str(r).strip()]
     if rules:
         lines.append("Règles énoncées :")
@@ -86,6 +94,8 @@ class Doctrine:
         self.structured: Dict[int, Dict[str, Any]] = {}
         self.source = "none"
         structured = _load_json(PAGES_JSON)
+        if isinstance(structured, dict):
+            structured = structured.get("pages")
         if isinstance(structured, list) and structured:
             for item in structured:
                 if isinstance(item, dict) and item.get("page"):
@@ -105,10 +115,11 @@ class Doctrine:
                     self.pages[p] = text
                     if self.source == "none":
                         self.source = "ocr"
-                elif self.source == "vision":
+                elif self.source == "vision" and not self.structured.get(p, {}).get("verification"):
                     # keep the OCR running text as a complement (names the
                     # vision model may have paraphrased)
                     self.pages[p] = self.pages[p] + "\nTexte OCR de la page : " + re.sub(r"\s+", " ", text)
+        self.revision = hashlib.sha256(json.dumps(self.pages, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:16]
         self._bm25 = None
         self._page_order: List[int] = sorted(self.pages)
         try:

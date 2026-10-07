@@ -1,4 +1,6 @@
 openai-chatkit
+openai
+numpy
 fastapi
 openai-agents[litellm]
 uvicorn

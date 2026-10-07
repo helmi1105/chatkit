@@ -36,7 +36,7 @@ def command_action(command: str, **extra: Any) -> ActionConfig:
 
 def _button(label: str, command: str, *, primary: bool = False) -> Button:
     return Button(
-        label=label,
+        label=label.replace("é", "e").replace("É", "E").replace("ç", "c").replace("Ç", "C"),
         onClickAction=command_action(command),
         style="primary" if primary else "secondary",
         size="sm",

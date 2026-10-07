@@ -35,7 +35,11 @@ MISTRAL_MODEL = os.getenv("MISTRAL_MODEL", "mistral/mistral-large-latest")
 MISTRAL_VISION_MODEL = os.getenv("MISTRAL_VISION_MODEL", "mistral/mistral-large-latest")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
 OPENAI_VISION_MODEL = os.getenv("OPENAI_VISION_MODEL", "gpt-4.1")
+OPENAI_INVENTORY_MODEL = os.getenv("OPENAI_INVENTORY_MODEL", "gpt-5.4")
+OPENAI_VISUAL_EXPLANATION_MODEL = os.getenv("OPENAI_VISUAL_EXPLANATION_MODEL", "gpt-5.4")
+OPENAI_FREE_QUESTION_MODEL = os.getenv("OPENAI_FREE_QUESTION_MODEL", "gpt-5.4")
 LLM_MAX_RETRIES = int(os.getenv("LLM_MAX_RETRIES", "3"))
+LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "90"))
 # Free Mistral tier: ~1 request/second. Parallel generation is throttled here.
 LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "2"))
 
@@ -114,13 +118,29 @@ def make_agent(
     with_tools: bool = False,
 ) -> Agent[Any]:
     choice = current_provider.get()
+    dedicated_models = {
+        "Visual-inventory": OPENAI_INVENTORY_MODEL,
+        "Visual-symbol": OPENAI_VISUAL_EXPLANATION_MODEL,
+        "Learner-question": OPENAI_FREE_QUESTION_MODEL,
+    }
+    if name in dedicated_models:
+        # Dedicated OpenAI models for visual tasks and free-answer SVG generation.
+        # A personal Mistral key must never be sent to OpenAI.
+        key = choice.api_key if choice.provider == PROVIDER_OPENAI else None
+        choice = ProviderChoice(provider=PROVIDER_OPENAI, api_key=key)
+        model = OpenAIResponsesModel(
+            model=dedicated_models[name],
+            openai_client=AsyncOpenAI(api_key=key or os.getenv("OPENAI_API_KEY")),
+        )
+    else:
+        model = build_model(choice, vision=vision)
     kwargs: dict = {}
     if output_type is not None:
         # non-strict: LiteLLM/Mistral reject some strict-schema constraints
         kwargs["output_type"] = AgentOutputSchema(output_type, strict_json_schema=False)
     return Agent[Any](
         name=name,
-        model=build_model(choice, vision=vision),
+        model=model,
         tools=build_tools(choice) if with_tools else [],
         instructions=instructions,
         model_settings=build_model_settings(choice),
@@ -181,6 +201,11 @@ def is_rate_limit(exc: Exception) -> bool:
 
 
 async def _run_with_retry(agent: Agent[Any], prompt: Any, ctx: Any) -> Any:
+    # Include queueing, SDK retries and our backoff in one deadline.
+    return await asyncio.wait_for(_run_attempts(agent, prompt, ctx), timeout=LLM_TIMEOUT_SECONDS)
+
+
+async def _run_attempts(agent: Agent[Any], prompt: Any, ctx: Any) -> Any:
     delay = 2.0
     last: Optional[Exception] = None
     for attempt in range(LLM_MAX_RETRIES + 1):
@@ -224,7 +249,7 @@ async def run_structured(
             return model_cls.model_validate_json(_extract_json_object(out))
         raise ValueError("empty structured output")
     except Exception as first_exc:  # noqa: BLE001
-        if is_rate_limit(first_exc) or "credit" in str(first_exc).lower() or "401" in str(first_exc):
+        if isinstance(first_exc, TimeoutError) or is_rate_limit(first_exc) or "credit" in str(first_exc).lower() or "401" in str(first_exc):
             raise
         print(f"[{name}] structured output failed ({type(first_exc).__name__}: {str(first_exc)[:160]}), text fallback")
     # An EXAMPLE object, not the JSON schema: given the schema, Mistral echoed
@@ -261,6 +286,11 @@ _AUTH_ERROR_HINTS = ("401", "unauthorized", "invalid api key", "authentication")
 
 
 def friendly_llm_error(exc: Exception) -> str:
+    if isinstance(exc, TimeoutError):
+        return "Le modèle a mis trop de temps à répondre. Veuillez réessayer dans un instant."
+    from app.embeddings import EmbeddingError
+    if isinstance(exc, EmbeddingError):
+        return str(exc)
     text = str(exc).lower()
     label = provider_label()
     if "credit" in text or "insufficient_quota" in text:

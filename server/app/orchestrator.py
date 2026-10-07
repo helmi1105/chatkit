@@ -37,6 +37,7 @@ import random
 import re
 import unicodedata
 import uuid
+from app.visual_retrieval import OBSERVE_INSTRUCTIONS, VisualInventory, retrieve_visual_evidence
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass, field, fields
 from datetime import date, datetime, timezone
@@ -44,7 +45,13 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple
 
 from chatkit.agents import AgentContext
 
+from app.podcast import Podcasts
+from app.flashcards import Flashcards
+from app.svg_answer import IllustratedAnswer, SVG_INSTRUCTIONS, validate_svg, illustration_widget
+from app.qa_retrieval import retrieve_question_context
 from app.bank import QuestionBank
+from app.decision_policy import build_learner_state, decide_next_action
+from app.diagnostic import HierarchicalDiagnostic
 from app.content import doctrine
 from app.providers import (
     friendly_llm_error,
@@ -67,6 +74,8 @@ KC_GRAPH_PATH = os.getenv("KC_GRAPH_PATH", os.path.join(os.path.dirname(__file__
 USER_ID_KEY = "userId"
 
 DIAGNOSTIC_Q_NUM = int(os.getenv("DIAGNOSTIC_Q_NUM", "10"))
+DIAGNOSTIC_MODE = os.getenv("DIAGNOSTIC_MODE", "hierarchical")
+DIAGNOSTIC_MAX_QUESTIONS = int(os.getenv("DIAGNOSTIC_MAX_QUESTIONS", "96"))
 THRESHOLD = float(os.getenv("MASTERY_THRESHOLD", "0.7"))
 PRACTICE_MIN_Q = int(os.getenv("PRACTICE_MIN_Q", "4"))
 PRACTICE_MAX_Q = int(os.getenv("PRACTICE_MAX_Q", "8"))
@@ -179,6 +188,15 @@ def fit_text(text: Any, max_chars: int) -> str:
 
 
 def qcm_widget_data(title: str, questions: List[dict]) -> Dict[str, Any]:
+    # Backend terminal only: the learner widget below receives no answer key.
+    lines = [f"[QCM answer key] {title}"]
+    for q in questions:
+        letter = str(q.get("answer") or "").upper()
+        choices = q.get("choices") or []
+        if letter in LETTERS and len(choices) == len(LETTERS):
+            lines.append(f"  Q{q['number']}: {q['text']}\n"
+                         f"    Correct answer: {letter}) {choices[LETTERS.index(letter)]}")
+    print("\n".join(lines), flush=True)
     q_out: List[dict] = []
     for q in questions:
         c = q["choices"]
@@ -396,6 +414,24 @@ class KcGraph:
 # =====================================================
 @dataclass
 class Session:
+    doctrine_revision: str = ""
+    diagnostic_taught_kc_ids: List[str] = field(default_factory=list)
+    diagnostic_groups: List[dict] = field(default_factory=list)
+    diagnostic_group_index: int = 0
+    diagnostic_scenario: str = ""
+    diagnostic_policy_version: int = 1
+    diagnostic_learning_queue: List[str] = field(default_factory=list)
+    diagnostic_mode: str = "flat"
+    practice_evidence_by_kc: Dict[str, List[dict]] = field(default_factory=dict)
+    diagnostic_stage: str = ""
+    diagnostic_validation_challenge: bool = False
+    diagnostic_round: int = 0
+    diagnostic_question_limit: int = 12
+    diagnostic_kc_ids: List[str] = field(default_factory=list)
+    diagnostic_evidence: Dict[str, List[dict]] = field(default_factory=dict)
+    diagnostic_status_by_kc: Dict[str, str] = field(default_factory=dict)
+    podcast_cache: Dict[str, Any] = field(default_factory=dict)
+    flashcard_deck: Dict[str, Any] = field(default_factory=dict)
     user_id: str = ""
     phase: str = "idle"                 # idle | waiting_answers
     scope: str = "diagnostic"           # diagnostic | practice | module_quiz
@@ -447,7 +483,7 @@ class BudgetExceeded(Exception):
 # =====================================================
 # ORCHESTRATOR
 # =====================================================
-class Orchestrator:
+class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
     def __init__(self) -> None:
         self.graph = KcGraph.load(KC_GRAPH_PATH)
         self.doc = doctrine()
@@ -468,6 +504,7 @@ class Orchestrator:
         data = await self.store.aget_json(f"sessions/{user_id}.json", None)
         sess = Session.from_dict(data) if isinstance(data, dict) else Session(user_id=user_id, created_at=datetime.now(timezone.utc).isoformat())
         sess.user_id = user_id
+        self._refresh_doctrine_material(sess)
         self._sessions[user_id] = sess
         return sess
 
@@ -477,20 +514,34 @@ class Orchestrator:
         data = self.store.get_json(f"sessions/{user_id}.json", None)
         sess = Session.from_dict(data) if isinstance(data, dict) else Session(user_id=user_id)
         sess.user_id = user_id
+        self._refresh_doctrine_material(sess)
         self._sessions[user_id] = sess
         return sess
+
+    def _refresh_doctrine_material(self, sess: Session) -> None:
+        revision = getattr(self.doc, "revision", "legacy")
+        if sess.doctrine_revision != revision:
+            sess.current_micro_lesson = ""
+            sess.kc_essential_targets = {}
+            sess.flashcard_deck = {}
+            sess.podcast_cache = {}
+            sess.pending_hint_ladder = []
+            sess.hint_index = 0
+            sess.doctrine_revision = revision
 
     async def _save_session(self, sess: Session) -> None:
         sess.updated_at = datetime.now(timezone.utc).isoformat()
         await self.store.aput_json(f"sessions/{sess.user_id}.json", asdict(sess))
 
     def _record_event(self, sess: Session, ctx: Any, event: Dict[str, Any]) -> None:
+        from app.auth import current_username
         enriched = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "thread_id": str(getattr(getattr(ctx, "thread", None), "id", "") or ""),
             "user_id": sess.user_id,
             "provider": current_provider.get().provider,
             **event,
+            "username": current_username.get(),
         }
         try:
             os.makedirs(os.path.dirname(EVIDENCE_LOG_PATH), exist_ok=True)
@@ -526,6 +577,8 @@ class Orchestrator:
         return self.doc.pages_text(pages, max_chars=max_chars)
 
     def _source_card(self, kc: KCNode, buttons: List[Tuple[str, str]]) -> Dict[str, Any]:
+        if not any(command == "flashcards" for _, command in buttons):
+            buttons = [*buttons, ("Cartes de revision", "flashcards"), ("ecouter la lecon", "podcast")]
         pages = self.graph.kc_pages(kc)
         first = pages[0] if pages else None
         return {
@@ -552,6 +605,10 @@ class Orchestrator:
         """Contextual buttons: what makes sense from the current state."""
         if sess.phase == "waiting_answers":
             return [("Poser une question", "question")]
+        if sess.module_gate_locked and sess.pending_module_retry:
+            return [("Refaire le contr?le du chapitre", "controle"), ("Ma progression", "ma progression")]
+        if sess.diagnostic_mode == 'hierarchical' and sess.diagnostic_done and not sess.current_kc_id:
+            return [("Ma progression", "ma progression"), ("Poser une question", "question")]
         if not sess.diagnostic_done and not sess.current_kc_id:
             return [("Commencer le diagnostic", "commencer le diagnostic"), ("Ma progression", "ma progression")]
         buttons: List[Tuple[str, str]] = []
@@ -563,7 +620,7 @@ class Orchestrator:
             buttons.append(("Lancer le quiz", "quiz"))
             if sess.pending_hint_ladder and sess.hint_index < len(sess.pending_hint_ladder):
                 buttons.append(("Un indice", "indice"))
-        buttons.append(("Revoir la leçon", "revoir la leçon"))
+        buttons.append(("Revoir la lecon", "revoir la lecon"))
         buttons.append(("Ma progression", "ma progression"))
         return buttons
 
@@ -630,12 +687,14 @@ class Orchestrator:
         return [self._text("Merci, la question est signalée aux formateurs. Vous pouvez continuer.")]
 
     def record_feedback(self, user_id: str, thread_id: str, item_ids: List[str], kind: str) -> None:
+        from app.auth import current_username
         sess = self.load_session_sync(user_id)
         enriched = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "thread_id": thread_id,
             "user_id": user_id,
             "event": "item_feedback",
+            "username": current_username.get(),
             "kind": kind,
             "item_ids": item_ids,
             "current_kc_id": sess.current_kc_id,
@@ -645,7 +704,9 @@ class Orchestrator:
     def peek_transition_message(self, ctx: AgentContext, raw_text: str) -> Optional[str]:
         cmd = classify_command(raw_text or "")
         if cmd == "start":
-            return "Je prépare un diagnostic rapide sur l'ensemble du mémento. Une trentaine de secondes."
+            return ("Je prépare un diagnostic par chapitre, avec des questions de suivi adaptées."
+                    if DIAGNOSTIC_MODE == 'hierarchical' else
+                    "Je prépare un diagnostic rapide sur l'ensemble du mémento. Une trentaine de secondes.")
         if cmd == "practice":
             return "Je prépare un quiz adapté à cette notion. Un instant."
         if cmd == "next":
@@ -666,12 +727,22 @@ class Orchestrator:
             "total": total,
             "diagnostic_done": sess.diagnostic_done,
             "quiz_pending": sess.phase == "waiting_answers",
+            "diagnostic_status_by_kc": dict(sess.diagnostic_status_by_kc),
+            "diagnostically_supported": sum(s == 'supported' for s in sess.diagnostic_status_by_kc.values()),
         }
 
     # =====================================================
     # DISPATCH
     # =====================================================
     async def _dispatch(self, sess: Session, cmd: Optional[str], text: str, ctx: Any) -> List[Dict[str, Any]]:
+        if text.strip().lower() in {'podcast', 'lecon audio', 'lecon audio'}:
+            return await self._podcast(sess, ctx)
+        if text.strip().lower() in {'flashcards', 'fiches', 'cartes de révision'} or text.strip().lower().startswith('fiche '):
+            return await self._flashcards(sess, text.strip().lower(), ctx)
+        if (sess.diagnostic_mode == 'hierarchical' and sess.diagnostic_stage not in {'', 'learning'} and not sess.diagnostic_done
+                and cmd in {'practice', 'next', 'lesson', 'checkpoint'}):
+            return [self._text('Terminez le diagnostic en cours avant de commencer la leçon ou le quiz.'),
+                    self._actions([('Reprendre le diagnostic', 'commencer le diagnostic')])]
         if sess.pending_reset and cmd not in {"reset_confirm", "cancel"}:
             sess.pending_reset = False
         if cmd == "start":
@@ -695,7 +766,6 @@ class Orchestrator:
         if cmd == "checkpoint":
             if not sess.pending_module_id or not sess.pending_module_retry:
                 return [self._text("Aucun contrôle de chapitre à refaire pour le moment."), self._actions(self._next_actions(sess))]
-            sess.pending_module_retry = False
             return await self._start_module_quiz(sess, sess.pending_module_id, ctx)
         if cmd == "clear_image":
             sess.last_visual_image_urls = []
@@ -724,7 +794,7 @@ class Orchestrator:
             return [self._text("Posez votre question directement dans le champ de message : je réponds avec le mémento.")]
         if not text:
             return self._help(sess)
-        if sess.last_visual_image_urls and sess.last_tutor_action == "answer_visual_pdf_question" and len(text) < 80:
+        if sess.last_visual_image_urls and sess.last_tutor_action == "answer_visual_pdf_question":
             return await self._answer_visual_question(sess, text, [], ctx)
         return await self._answer_free_question(sess, text, ctx)
 
@@ -739,7 +809,10 @@ class Orchestrator:
     def _help(self, sess: Session) -> List[Dict[str, Any]]:
         text = (
             "Comment ça marche\n\n"
-            "1. Un diagnostic rapide (une dizaine de questions sur tout le mémento) repère les notions à travailler. Il ne note pas, il oriente.\n"
+            + ("1. Un diagnostic par chapitre repère les notions à travailler. Les réussites étayées permettent de passer les leçons introductives correspondantes.\n"
+               if DIAGNOSTIC_MODE == 'hierarchical' else
+               "1. Un diagnostic rapide sur le mémento repère les notions à travailler. Il oriente sans valider la maîtrise.\n")
+            +
             "2. Pour chaque notion : une leçon courte avec la page du mémento, puis un quiz. À 70 % de bonnes réponses, la notion est validée.\n"
             "3. En cas d'erreur : un corrigé question par question, des indices, et une reprise du quiz.\n"
             "4. À la fin de chaque chapitre, un contrôle regroupe ses notions.\n\n"
@@ -776,6 +849,13 @@ class Orchestrator:
         cur_kc = self._kc(sess.current_kc_id)
         intro = "Diagnostic non fait : commencez par lui pour situer votre niveau." if not sess.diagnostic_done else (
             f"Notion en cours : {cur_kc.title}." if cur_kc else "Parcours terminé.")
+        if sess.diagnostic_mode == 'hierarchical' and sess.diagnostic_done:
+            supported = [self.graph.nodes[k].title for k, s in sess.diagnostic_status_by_kc.items()
+                         if s == 'supported' and k in self.graph.nodes]
+            intro = (f"Notion à travailler : {cur_kc.title}." if cur_kc else
+                     "Aucune leçon introductive restante selon le diagnostic. Cela ne constitue pas une validation de toutes les notions.")
+            intro += '\nLeçons introductives dispensées : ' + (', '.join(supported) or 'aucune') + '.'
+            intro += '\nLe radar représente les scores de pratique ; les observations diagnostiques sont distinctes.'
         return [self._text(intro), {"type": "widget", "title": "Ma progression", "widget": card}]
 
     def _display_mastery(self, sess: Session, kc_id: str) -> float:
@@ -833,6 +913,11 @@ class Orchestrator:
         return normalize_questions(out.questions, kc.id)
 
     async def _start_diagnostic(self, sess: Session, ctx: Any) -> List[Dict[str, Any]]:
+        if DIAGNOSTIC_MODE == "hierarchical":
+            return await self._start_hierarchical(sess, ctx)
+        if DIAGNOSTIC_MODE != "flat":
+            raise ValueError('DIAGNOSTIC_MODE must be flat or hierarchical')
+        sess.diagnostic_mode = "flat"
         kcs = self._sample_diagnostic_kcs(DIAGNOSTIC_Q_NUM)
         if not kcs:
             return [self._text("Le plan du cours est vide : impossible de construire le diagnostic.")]
@@ -881,6 +966,8 @@ class Orchestrator:
     # LESSON
     # =====================================================
     def _lesson_mode(self, sess: Session, kc: KCNode, level: float, attempts: int, labels: List[str]) -> Tuple[str, str]:
+        if sess.diagnostic_stage == 'learning' and sess.last_mistakes_summary:
+            return 'remediation', 'Cible les erreurs observées dans le diagnostic, sans supposer une misconception confirmée.'
         if attempts <= 0:
             return "first_exposure", "Donne la base minimale nécessaire avant un premier quiz."
         if level < 0.4 or labels:
@@ -930,7 +1017,7 @@ class Orchestrator:
         mode, focus = self._lesson_mode(sess, kc, level, attempts, labels)
         pages = self.graph.kc_pages(kc)
         summary = mistakes_summary or sess.last_mistakes_summary
-        cache_key = f"cache/lesson/{current_provider.get().provider}/{kc.id}/{mode}.json" if mode in {"first_exposure", "brief_validation"} else None
+        cache_key = f"cache/lesson/{getattr(self.doc, 'revision', 'legacy')}/{current_provider.get().provider}/{kc.id}/{mode}.json" if mode in {"first_exposure", "brief_validation"} else None
         cached = await self.store.aget_json(cache_key, None) if cache_key else None
         if isinstance(cached, dict) and cached.get("text"):
             text = str(cached["text"])
@@ -975,7 +1062,7 @@ class Orchestrator:
         if len(rules) >= 3:
             targets = rules[:10]
         else:
-            shared_key = f"cache/targets/{kc.id}.json"
+            shared_key = f"cache/targets/{getattr(self.doc, 'revision', 'legacy')}/{kc.id}.json"
             shared = await self.store.aget_json(shared_key, None)
             if isinstance(shared, list) and shared:
                 targets = [str(t) for t in shared]
@@ -999,12 +1086,16 @@ class Orchestrator:
             return [self._text("Notion introuvable dans le plan du cours.")]
         sess.can_advance = False
         sess.validated_kc_id = None
-        if not sess.current_micro_lesson.strip():
+        challenge = sess.diagnostic_validation_challenge
+        if not sess.current_micro_lesson.strip() and not challenge:
             sess.current_micro_lesson = await self._build_lesson(sess, kc, ctx)
-            sess.last_mistakes_summary = ""
+            if sess.diagnostic_stage != 'learning':
+                sess.last_mistakes_summary = ""
         mastery = float(sess.mastery.get(kc.id, 0.0))
         attempts_before = int(sess.attempts_by_kc.get(kc.id, 0))
         difficulty = "easy" if attempts_before <= 0 or mastery < 0.4 else ("medium" if mastery < THRESHOLD else "hard")
+        if challenge:
+            difficulty = "medium"
         review_kcs = [self.graph.nodes[i] for i in self.graph.previous_kcs(kc.id, limit=2) if i in self.graph.nodes]
         targets = await self._essential_targets(sess, kc, ctx)
         mistakes = sess.last_mistakes_summary.strip()
@@ -1012,10 +1103,13 @@ class Orchestrator:
         target_n = min(len(targets), 6) + min(2, mistake_count) + (1 if review_kcs and difficulty != "easy" else 0)
         min_q = max(PRACTICE_MIN_Q, min(PRACTICE_MAX_Q, target_n))
         max_q = max(min_q, min(PRACTICE_MAX_Q, min_q + 2))
+        if challenge:
+            min_q = max(min_q, len(targets))
+            max_q = max(max_q, min_q)
         seen = set(sess.seen_question_ids)
         from_bank = False
         questions: List[dict] = []
-        if self.bank.count(kc.id) >= min_q:
+        if not challenge and self.bank.count(kc.id) >= min_q:
             questions = self.bank.draw(kc.id, min_q, exclude_ids=seen, difficulty=difficulty)
             from_bank = bool(questions)
         coverage_plan: Any = []
@@ -1041,9 +1135,47 @@ class Orchestrator:
             out = await run_structured("Practice-QCM", INSTR_PRACTICE, prompt, PracticePack, ctx)
             questions = normalize_questions(out.questions, kc.id)
             coverage_plan = [c.model_dump() for c in out.coverage_plan]
-            if len(questions) < min(PRACTICE_MIN_Q, 3):
-                raise RuntimeError(f"quiz inexploitable ({len(questions)} questions valides)")
-            questions = questions[:max_q]
+            if challenge:
+                expected_targets = {f"E{i}" for i in range(1, len(targets) + 1)}
+                # Prefer one question per objective before filling remaining slots.
+                def select_complete(pool):
+                    unique = []
+                    stems = set()
+                    for q in pool:
+                        stem = q['text'].strip().casefold()
+                        if stem not in stems:
+                            unique.append(q)
+                            stems.add(stem)
+                    selected = []
+                    for target in sorted(expected_targets):
+                        match = next((q for q in unique if q.get('target_id') == target), None)
+                        if match is not None:
+                            selected.append(match)
+                    selected.extend(q for q in unique if q not in selected)
+                    return selected[:max_q]
+                questions = select_complete(questions)
+                for repair in range(3):
+                    missing = expected_targets - {q.get('target_id') for q in questions}
+                    if expected_targets and not missing and len(questions) >= min_q:
+                        break
+                    if repair == 2 or not expected_targets:
+                        raise RuntimeError('Quiz de validation incomplet : les objectifs doivent tous ?tre couverts.')
+                    self._charge_budget(sess)
+                    self._record_event(sess, ctx, {'event': 'validation_quiz_repair', 'kc_id': kc.id,
+                        'attempt': repair + 1, 'missing_targets': sorted(missing), 'valid_questions': len(questions)})
+                    repair_prompt = prompt + (
+                        f"\nCompl?te le quiz avec {max(len(missing), min_q - len(questions))} nouvelles questions. "
+                        f"Objectifs manquants obligatoires : {sorted(missing)}. "
+                        f"Ne r?p?te pas ces ?nonc?s : {[q['text'] for q in questions]}."
+                    )
+                    extra = await run_structured('Practice-QCM-repair', INSTR_PRACTICE, repair_prompt, PracticePack, ctx)
+                    questions = select_complete(questions + normalize_questions(extra.questions, kc.id))
+                coverage_plan = [{'target_id': target, 'question_numbers': [i for i, q in enumerate(questions, 1)
+                                  if q.get('target_id') == target]} for target in sorted(expected_targets)]
+            else:
+                if len(questions) < min(PRACTICE_MIN_Q, 3):
+                    raise RuntimeError(f"quiz inexploitable ({len(questions)} questions valides)")
+                questions = questions[:max_q]
         for i, q in enumerate(questions, start=1):
             q["number"] = i
             q["kc_id"] = kc.id
@@ -1167,6 +1299,8 @@ class Orchestrator:
     async def _process_answers(self, sess: Session, answers: Dict[int, str], ctx: Any) -> List[Dict[str, Any]]:
         if sess.phase != "waiting_answers" or not sess.quiz_questions:
             return [self._text("Aucun quiz en attente de réponses."), self._actions(self._next_actions(sess))]
+        if sess.scope == "diagnostic" and sess.diagnostic_mode == "hierarchical":
+            return await self._submit_hierarchical(sess, answers, ctx)
         overall, per_kc, items = self._score(sess, answers)
         mastery_before = dict(sess.mastery)
         wrong_items = [it for it in items if not it["correct"]]
@@ -1232,9 +1366,23 @@ class Orchestrator:
             return [self._text("Notion en cours introuvable.")]
         c, t = per_kc.get(kc.id, (0, len(sess.quiz_questions)))
         score = c / max(1, t)
+        state = build_learner_state(sess, self.graph)
+        practice_result = {'score': score, 'threshold': THRESHOLD,
+                           'remediation_below': REMEDIATION_LESSON_BELOW}
+        decision = decide_next_action(state, [], practice_result=practice_result)
+        self._record_event(sess, ctx, {'event': 'pedagogical_decision', 'phase': 'practice',
+            'quiz_id': sess.quiz_id, 'learner_state': state, 'practice_result': practice_result,
+            'curriculum': [], 'decision': decision})
+        sess.practice_evidence_by_kc.setdefault(kc.id, []).append({
+            'quiz_id': sess.quiz_id, 'score': score, 'items': items,
+            'validation_challenge': sess.diagnostic_validation_challenge,
+            'lesson_available': bool(sess.current_micro_lesson),
+            'objective_ids_assessed': sorted({q.get('target_id') for q in sess.quiz_questions.values() if q.get('target_id')}),
+        })
         self._clear_quiz(sess)
         quiz_id = sess.quiz_id
-        if score < THRESHOLD:
+        if decision['action'] != 'advance':
+            sess.diagnostic_validation_challenge = False
             sess.can_advance = False
             sess.validated_kc_id = None
             labels: List[str] = []
@@ -1255,7 +1403,7 @@ class Orchestrator:
             ]
             sess.hint_index = 0
             blocks: List[Dict[str, Any]] = [self._correction_block(sess, items, score, False, f"Corrigé · {kc.title}")]
-            if score < REMEDIATION_LESSON_BELOW:
+            if decision['action'] == 'remediate':
                 lesson = await self._build_lesson(sess, kc, ctx, mistakes_summary=sess.last_mistakes_summary)
                 sess.current_micro_lesson = lesson
                 blocks.append(self._text(f"Notion non validée ({score:.0%}, seuil {THRESHOLD:.0%}).\n\n{fb.summary}\n\nLeçon de reprise :\n\n{lesson}"))
@@ -1271,13 +1419,32 @@ class Orchestrator:
             return blocks
 
         sess.can_advance = True
+        sess.diagnostic_validation_challenge = False
         sess.validated_kc_id = kc.id
         if kc.id not in sess.validated_kc_ids:
             sess.validated_kc_ids.append(kc.id)
+        if sess.diagnostic_mode == 'hierarchical' and sess.diagnostic_stage == 'learning' and not sess.diagnostic_done:
+            self._record_event(sess, ctx, {'event': 'practice_submitted', 'tutor_action': 'validate_kc',
+                'kc_id': kc.id, 'kc_title': kc.title, 'score': score, 'threshold': THRESHOLD,
+                'passed': True, 'mastery_before': mastery_before, 'mastery_after': dict(sess.mastery),
+                'quiz_id': quiz_id, 'decision_reason': 'resume_paused_diagnostic'})
+            sess.diagnostic_taught_kc_ids.append(kc.id)
+            sess.diagnostic_stage = 'resuming'
+            sess.scope = 'diagnostic'
+            sess.can_advance = False
+            sess.validated_kc_id = None
+            sess.current_kc_id = None
+            sess.current_micro_lesson = ''
+            sess.pending_hint_ladder = []
+            sess.last_mistakes_summary = ''
+            await self._save_session(sess)
+            return [self._correction_block(sess, items, score, True, f'Corrigé · {kc.title}'),
+                    self._text('Notion validée. Reprenons le diagnostic à la position enregistrée.'),
+                    self._actions([('Reprendre le diagnostic', 'commencer le diagnostic')])]
         sess.weak_queue = [k for k in sess.weak_queue if k != kc.id]
         sess.pending_hint_ladder = []
         sess.hint_index = 0
-        nxt = self.graph.next_kc(kc.id)
+        nxt = self._learning_next(sess, kc.id)
         sess.pending_next_kc_id = nxt if nxt in self.graph.nodes else None
         cur_module = self.graph.module_of(kc.id)
         next_module = self.graph.module_of(nxt) if nxt else None
@@ -1311,6 +1478,23 @@ class Orchestrator:
             blocks.append(self._actions([("Ma progression", "ma progression")]))
         return blocks
 
+    def completion_status(self, sess):
+        missing_kcs = [k for k in self.graph.kc_ids() if k not in sess.validated_kc_ids]
+        missing_modules = [mid for mid, _, ids in self.graph.modules_in_order()
+                           if mid != 'ROOT' and ids and sess.module_mastery.get(mid, 0) < MODULE_THRESHOLD]
+        return {'complete': not missing_kcs and not missing_modules,
+                'missing_kc_ids': missing_kcs, 'missing_module_ids': missing_modules}
+
+    async def _completion_checkpoint(self, sess, ctx):
+        status = self.completion_status(sess)
+        if not status['missing_kc_ids'] and status['missing_module_ids']:
+            sess.pending_module_id = status['missing_module_ids'][0]
+            sess.module_gate_locked = True
+            sess.pending_module_retry = True  # remains retryable if generation fails
+            sess.pending_next_kc_id = None
+            return await self._start_module_quiz(sess, sess.pending_module_id, ctx)
+        return []
+
     async def _after_module(self, sess: Session, ctx: Any, score: float, items: List[dict], wrong_items: List[dict], mastery_before: Dict[str, float]) -> List[Dict[str, Any]]:
         module_id = sess.pending_module_id
         title = self.graph.nodes[module_id].title if module_id and module_id in self.graph.nodes else "Chapitre"
@@ -1335,6 +1519,10 @@ class Orchestrator:
         sess.last_tutor_action = "validate_module"
         nxt = sess.pending_next_kc_id
         self._record_event(sess, ctx, {"event": "module_checkpoint_submitted", "tutor_action": sess.last_tutor_action, "decision_reason": "score reached threshold", "module_id": module_id, "score": score, "threshold": MODULE_THRESHOLD, "wrong_items": wrong_items, "mastery_before": mastery_before, "mastery_after": dict(sess.mastery), "next_kc_id": nxt, "quiz_id": quiz_id})
+        if not self.completion_status(sess)['missing_kc_ids']:
+            pending = await self._completion_checkpoint(sess, ctx)
+            if pending:
+                return blocks + pending
         if not nxt or nxt not in self.graph.nodes:
             blocks.append(self._text(f"Chapitre « {title} » validé ({score:.0%}). Vous avez terminé le parcours du mémento."))
             blocks.append(self._actions([("Ma progression", "ma progression")]))
@@ -1378,7 +1566,7 @@ class Orchestrator:
             if sess.module_gate_locked:
                 mod = self.graph.nodes[sess.pending_module_id].title if sess.pending_module_id in self.graph.nodes else "chapitre"
                 return [self._text(f"Le contrôle du chapitre « {mod} » doit être réussi avant de continuer."), self._actions([("Refaire le contrôle du chapitre", "controle")] if sess.pending_module_retry else [("Poser une question", "question")])]
-        nxt = sess.pending_next_kc_id or self.graph.next_kc(sess.current_kc_id or "")
+        nxt = sess.pending_next_kc_id or self._learning_next(sess, sess.current_kc_id)
         if not nxt or nxt not in self.graph.nodes:
             sess.can_advance = False
             sess.validated_kc_id = None
@@ -1408,10 +1596,8 @@ class Orchestrator:
         self._charge_budget(sess)
         kc = self._kc(sess.current_kc_id)
         pages: List[int] = list(self.graph.kc_pages(kc)) if kc else []
-        found = self.doc.search_pages(question, k=3)
-        pages = pages + [p for p in found if p not in pages]
-        if not pages:
-            pages = [2, 3, 4]
+        evidence, pages, retrieval = retrieve_question_context(self.doc, question, pages)
+        found = pages
         later: List[str] = []
         if kc:
             cur_idx = self.graph.index_by_kc.get(kc.id, 0)
@@ -1424,16 +1610,31 @@ class Orchestrator:
             f"Question de l'apprenant : {question}\n\n"
             + (f"Notion en cours : « {kc.title} ».\n" if kc else "Aucune notion en cours (parcours pas encore commencé).\n")
             + (f"Leçon en cours :\n{sess.current_micro_lesson[:1500]}\n\n" if sess.current_micro_lesson else "")
-            + f"Extraits du mémento (pages {sorted(set(pages))}) :\n{self.doc.pages_text(pages, max_chars=8000)}\n\n"
+            + f"Extraits du mémento (pages {pages}) :\n{evidence}\n\n"
             "Réponds en français, de façon concise et pédagogique, uniquement à partir des extraits, en citant la ou les pages. "
             "Si la réponse n'est pas dans le mémento, dis-le clairement et propose la page la plus proche."
         )
-        answer = await run_text("Learner-question", INSTR_QA, prompt, ctx)
+        out = await run_structured("Learner-question", INSTR_QA + " " + SVG_INSTRUCTIONS,
+                                   prompt, IllustratedAnswer, ctx)
+        answer = out.answer
+        illustration = []
+        if out.svg:
+            try:
+                if not out.illustration_pages or not set(out.illustration_pages).issubset(pages):
+                    raise ValueError('Invalid illustration pages')
+                svg = validate_svg(out.svg)
+                illustration = [illustration_widget(svg, sorted(set(out.illustration_pages)), self.doc.pdf_url)]
+            except Exception as exc:
+                print(f"[free-question SVG] {type(exc).__name__}: {exc}")
+                self._record_event(sess, ctx, {'event': 'free_question_svg_rejected',
+                    'error_type': type(exc).__name__, 'reason': str(exc)[:200]})
+                answer += "\n\nLe schéma n’a pas pu être affiché. Consultez les pages citées."
+
         if later and kc:
             answer += f"\n\nCe point est détaillé plus loin dans le parcours (notion « {later[0]} ») ; vous y reviendrez avec un quiz."
         sess.last_tutor_action = "answer_lesson_question"
-        self._record_event(sess, ctx, {"event": "learner_question_answered", "tutor_action": sess.last_tutor_action, "question": question, "current_kc_id": kc.id if kc else None, "source_pages": sorted(set(pages)), "answer_preview": answer[:1000]})
-        return [self._text(answer), self._actions(self._next_actions(sess))]
+        self._record_event(sess, ctx, {"event": "learner_question_answered", "tutor_action": sess.last_tutor_action, "question": question, "current_kc_id": kc.id if kc else None, "source_pages": sorted(set(pages)), "retrieval": retrieval, "context_chars": len(evidence), "answer_preview": answer[:1000]})
+        return [self._text(answer), *illustration, self._actions(self._next_actions(sess))]
 
     async def _answer_visual_question(self, sess: Session, question: str, image_urls: List[str], ctx: Any) -> List[Dict[str, Any]]:
         self._charge_budget(sess)
@@ -1447,21 +1648,27 @@ class Orchestrator:
         if not image_urls:
             return [self._text("Envoyez d'abord la photo d'un symbole, puis posez votre question.")]
         kc = self._kc(sess.current_kc_id)
-        pages = [3, 4, 5] + self.doc.search_pages(question or "symbole forme couleur", k=3)
-        _progress("J'analyse la photo", "images")
+        _progress("J'identifie les éléments visibles dans l'image", "images")
+        observation_content = [{"type": "input_text", "text": f"Question : {question or 'Décris cette image.'}\nRelève les éléments visibles utiles pour répondre, sans inventer leur signification."}]
+        observation_content.extend({"type": "input_image", "image_url": url, "detail": "high"} for url in image_urls)
+        inventory = await run_structured(
+            "Visual-inventory", OBSERVE_INSTRUCTIONS,
+            [{"role": "user", "content": observation_content}], VisualInventory, ctx, vision=True,
+        )
+        _progress("Je cherche les références de chaque élément dans le cours", "search")
+        evidence, pages = await asyncio.to_thread(retrieve_visual_evidence, self.doc, inventory, question)
+        self._charge_budget(sess)
         prompt = (
-            f"L'apprenant envoie une photo de symbole et demande : {question or 'Que signifie ce symbole ?'}\n"
-            + (f"Notion en cours : « {kc.title} ».\n" if kc else "")
+            f"Question : {question or 'Décris cette image.'}\n"
             + (f"Échanges récents sur la même image : {sess.visual_question_history[-4:]}\n" if is_followup and sess.visual_question_history else "")
-            + f"\nExtraits du mémento (variables visuelles et pages voisines) :\n{self.doc.pages_text(pages, max_chars=9000)}\n\n"
-            "Réponds en français avec ce plan : 1) Je vois (forme, couleur, contour, texte, pictogramme) ; 2) Signification selon le mémento, élément par élément ; "
-            "3) Interprétation combinée ; 4) Source (pages). Si la photo est floue ou le symbole absent du mémento, dis-le et demande une photo plus nette."
+            + f"\nObservations visuelles (provisoires, à vérifier sur les images) :\n{inventory.model_dump_json()}\n"
+            + f"\nPassages candidats recherchés séparément pour chaque élément dans tout le cours :\n{evidence}\n\n"
         )
         content: List[dict] = [{"type": "input_text", "text": prompt}]
         for url in image_urls:
-            content.append({"type": "input_image", "image_url": url, "detail": "auto"})
+            content.append({"type": "input_image", "image_url": url, "detail": "high"})
         answer = await run_text("Visual-symbol", INSTR_VISUAL, [{"role": "user", "content": content}], ctx, vision=True)
-        sess.visual_question_history = (sess.visual_question_history + [{"question": question or "Que signifie ce symbole ?", "answer": answer[:1200]}])[-8:]
+        sess.visual_question_history = (sess.visual_question_history + [{"question": question or "Décris cette image.", "answer": answer[:1200]}])[-8:]
         sess.last_tutor_action = "answer_visual_pdf_question"
         self._record_event(sess, ctx, {"event": "visual_question_answered", "tutor_action": sess.last_tutor_action, "question": question, "n_images": len(image_urls), "image_context_reused": is_followup, "scope": "full_pdf_course", "current_kc_id": kc.id if kc else None, "source_pages": sorted(set(pages)), "answer_preview": answer[:1000]})
         return [self._text(answer), self._actions([("Oublier la photo", "oublier la photo")] + self._next_actions(sess))]
@@ -1492,6 +1699,7 @@ INSTR_QA = (
     "en citant les pages. Concis, pédagogique, sans invention, mise en forme sobre (pas de titres, gras limité aux termes officiels)."
 )
 INSTR_VISUAL = (
-    "Tu es tuteur visuel pour les symboles de cartographie opérationnelle des sapeurs-pompiers. Tu réponds en français, "
-    "tu décris ce que tu vois puis tu relies chaque élément visible (forme, couleur, contour, état, texte) à sa signification dans le mémento fourni."
+    "Réponds en français directement à la question sur l'image, sans plan imposé. "
+    "Utilise les extraits du mémento seulement s'ils sont pertinents et cite les pages qui soutiennent tes explications métier. "
+    "N'invente pas de convention graphique ; indique simplement ce qui reste incertain."
 )

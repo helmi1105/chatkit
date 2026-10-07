@@ -19,6 +19,7 @@ import asyncio
 import json
 import os
 import threading
+import tempfile
 import time
 import uuid
 from datetime import datetime, timezone
@@ -41,6 +42,7 @@ class _LocalBackend:
     def __init__(self, root: Path) -> None:
         self.root = root
         self.root.mkdir(parents=True, exist_ok=True)
+        self._write_lock = threading.Lock()
 
     def _path(self, key: str) -> Path:
         p = (self.root / key).resolve()
@@ -53,16 +55,49 @@ class _LocalBackend:
         return p.read_bytes() if p.exists() else None
 
     def put(self, key: str, data: bytes) -> None:
+        with self._write_lock:
+            self._put(key, data)
+
+    def _put(self, key: str, data: bytes) -> None:
         p = self._path(key)
         p.parent.mkdir(parents=True, exist_ok=True)
-        tmp = p.with_suffix(p.suffix + ".tmp")
-        tmp.write_bytes(data)
-        os.replace(tmp, p)
+        # Concurrent requests must not share the same temporary filename.
+        with tempfile.NamedTemporaryFile(dir=p.parent, prefix=p.name + ".", suffix=".tmp", delete=False) as f:
+            tmp = Path(f.name)
+            f.write(data)
+        try:
+            for attempt in range(6):
+                try:
+                    os.replace(tmp, p)
+                    break
+                except OSError as exc:
+                    # Windows readers/sync software can briefly lock the destination.
+                    if getattr(exc, "winerror", None) not in (5, 32, 33) or attempt == 5:
+                        raise
+                    time.sleep(0.02 * (2 ** attempt))
+        finally:
+            tmp.unlink(missing_ok=True)
 
     def delete(self, key: str) -> None:
         p = self._path(key)
         if p.exists():
             p.unlink()
+
+    def put_if_absent(self, key: str, data: bytes) -> bool:
+        """Atomically publish a complete new file without replacing an account."""
+        p = self._path(key)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=p.parent, suffix='.tmp', delete=False) as f:
+            tmp = Path(f.name)
+            f.write(data)
+        try:
+            try:
+                os.link(tmp, p)
+                return True
+            except FileExistsError:
+                return False
+        finally:
+            tmp.unlink(missing_ok=True)
 
     def list(self, prefix: str) -> List[str]:
         base = self._path(prefix.rstrip("/")) if prefix else self.root
@@ -106,6 +141,17 @@ class _S3Backend:
 
     def delete(self, key: str) -> None:
         self.client.delete_object(Bucket=self.bucket, Key=key)
+
+    def put_if_absent(self, key: str, data: bytes) -> bool:
+        from botocore.exceptions import ClientError
+        try:
+            self.client.put_object(Bucket=self.bucket, Key=key, Body=data,
+                                   ContentType='application/json', IfNoneMatch='*')
+            return True
+        except ClientError as exc:
+            if exc.response.get('ResponseMetadata', {}).get('HTTPStatusCode') in (409, 412):
+                return False
+            raise
 
     def list(self, prefix: str) -> List[str]:
         keys: List[str] = []

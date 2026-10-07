@@ -14,13 +14,7 @@
     {"id":"g_k4","title":"L'ÉTAT","kind":"KC","pages":[4]},
     {"id":"g_k5","title":"LA SURCHARGE","kind":"KC","pages":[5]},
 
-    {"id":"g_m2","title":"Principe de la cartographie opérationnelle","kind":"MODULE","pages":[6,7]},
-    {"id":"g_k6","title":"I - ANALYSE ET SCHÉMATISATION DE LA ZONE D'INTERVENTION","kind":"KC","pages":[6]},
-    {"id":"g_k7","title":"II - LOCALISATION DU SINISTRE (centres et zones d'action)","kind":"KC","pages":[6]},
-    {"id":"g_k8","title":"III - ACTIONS","kind":"KC","pages":[7]},
-    {"id":"g_k9","title":"IV - MOYENS","kind":"KC","pages":[7]},
-    {"id":"g_k10","title":"V - ORGANISATION OPÉRATIONNELLE DE LA ZONE D'INTERVENTION","kind":"KC","pages":[7]},
-    {"id":"g_k11","title":"VI - COLLECTE ET MISE À JOUR DES DONNÉES CONTEXTUELLES ASSOCIÉES À L'OPÉRATION","kind":"KC","pages":[7]},
+    {"id":"g_k_principles","title":"Principe de la cartographie opérationnelle","kind":"KC","pages":[6,7]},
 
     {"id":"g_m3","title":"I - ANALYSE DE LA ZONE D'INTERVENTION","kind":"MODULE","pages":[8,9,10]},
     {"id":"g_u1","title":"1.1 RESSOURCES DE LA ZONE D'INTERVENTION","kind":"UNIT","pages":[8,9]},
@@ -64,7 +58,7 @@
   "contains": [
     ["g_course","g_k1"],
     ["g_course","g_m1"],
-    ["g_course","g_m2"],
+    ["g_course","g_k_principles"],
     ["g_course","g_m3"],
     ["g_course","g_m4"],
     ["g_course","g_m5"],
@@ -79,12 +73,6 @@
     ["g_m1","g_k4"],
     ["g_m1","g_k5"],
 
-    ["g_m2","g_k6"],
-    ["g_m2","g_k7"],
-    ["g_m2","g_k8"],
-    ["g_m2","g_k9"],
-    ["g_m2","g_k10"],
-    ["g_m2","g_k11"],
 
     ["g_m3","g_u1"],
     ["g_m3","g_u2"],
@@ -118,8 +106,8 @@
 
   "sequence": [
     ["g_k1","g_m1"],
-    ["g_m1","g_m2"],
-    ["g_m2","g_m3"],
+    ["g_m1","g_k_principles"],
+    ["g_k_principles","g_m3"],
     ["g_m3","g_m4"],
     ["g_m4","g_m5"],
     ["g_m5","g_m6"],
@@ -132,11 +120,6 @@
     ["g_k3","g_k4"],
     ["g_k4","g_k5"],
 
-    ["g_k6","g_k7"],
-    ["g_k7","g_k8"],
-    ["g_k8","g_k9"],
-    ["g_k9","g_k10"],
-    ["g_k10","g_k11"],
 
     ["g_u1","g_u2"],
     ["g_k12","g_k13"],
@@ -165,13 +148,7 @@
     "g_k4":{"pages":[4],"heading_path":["Définition du langage cartographique","L'ÉTAT"]},
     "g_k5":{"pages":[5],"heading_path":["Définition du langage cartographique","LA SURCHARGE"]},
 
-    "g_m2":{"pages":[6,7],"heading_path":["Principe de la cartographie opérationnelle"]},
-    "g_k6":{"pages":[6],"heading_path":["Principe de la cartographie opérationnelle","I - ANALYSE ET SCHÉMATISATION DE LA ZONE D'INTERVENTION"]},
-    "g_k7":{"pages":[6],"heading_path":["Principe de la cartographie opérationnelle","II - LOCALISATION DU SINISTRE (centres et zones d'action)"]},
-    "g_k8":{"pages":[7],"heading_path":["Principe de la cartographie opérationnelle","III - ACTIONS"]},
-    "g_k9":{"pages":[7],"heading_path":["Principe de la cartographie opérationnelle","IV - MOYENS"]},
-    "g_k10":{"pages":[7],"heading_path":["Principe de la cartographie opérationnelle","V - ORGANISATION OPÉRATIONNELLE DE LA ZONE D'INTERVENTION"]},
-    "g_k11":{"pages":[7],"heading_path":["Principe de la cartographie opérationnelle","VI - COLLECTE ET MISE À JOUR DES DONNÉES CONTEXTUELLES ASSOCIÉES À L'OPÉRATION"]},
+    "g_k_principles":{"pages":[6,7],"heading_path":["Principe de la cartographie opérationnelle"]},
 
     "g_m3":{"pages":[8,9,10],"heading_path":["I - ANALYSE DE LA ZONE D'INTERVENTION"]},
     "g_u1":{"pages":[8,9],"heading_path":["I - ANALYSE DE LA ZONE D'INTERVENTION","1.1 RESSOURCES DE LA ZONE D'INTERVENTION"]},

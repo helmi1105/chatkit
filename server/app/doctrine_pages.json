@@ -1,3014 +1,1688 @@
-[
- {
-  "page": 1,
-  "title": "Outils graphiques",
-  "sections": [
-   {
-    "heading": "Mémento gestion opérationnelle et commandement",
-    "text": "Ce mémento a pour objectif de fournir aux sapeurs-pompiers les outils graphiques nécessaires à la gestion opérationnelle et au commandement sur intervention. Il présente les symboles, pastilles et conventions graphiques standardisés pour une compréhension immédiate et une transmission efficace des informations sur le terrain.\n\nLes outils graphiques décrits ci-après doivent être utilisés conformément aux doctrines en vigueur au sein des services d'incendie et de secours (SIS). Ils permettent de matérialiser les dispositifs, les zones d'intervention, les flux et les points critiques lors des opérations."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "triangle",
-    "color": "rouge",
-    "style": "contour seul, trait plein",
-    "meaning": "Point de rassemblement des victimes (PRV) – Lieu où sont regroupées les victimes avant leur évacuation ou leur prise en charge médicale.",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "carré",
-    "color": "bleu",
-    "style": "rempli",
-    "meaning": "Poste de commandement (PC) – Emplacement où s'exerce le commandement opérationnel. Il peut être fixe ou mobile selon l'évolution de l'intervention.",
-    "text_inside": "PC"
-   },
-   {
-    "label": "",
-    "shape": "cercle",
-    "color": "jaune",
-    "style": "contour seul, trait plein",
-    "meaning": "Zone d'exclusion (ZEX) – Périmètre de sécurité interdit à toute personne non autorisée et non équipée des moyens de protection adaptés.",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle horizontal",
-    "color": "orange",
-    "style": "rempli",
-    "meaning": "Point de contrôle des intervenants (PCI) – Point de passage obligatoire pour les équipes engagées dans la zone d'intervention, permettant leur traçabilité et leur sécurité.",
-    "text_inside": "PCI"
-   },
-   {
-    "label": "",
-    "shape": "rectangle vertical",
-    "color": "vert",
-    "style": "contour seul, trait plein",
-    "meaning": "Aire de stationnement des moyens (ASM) – Zone réservée au stationnement et à la préparation des engins et matériels.",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "étoile",
-    "color": "rouge",
-    "style": "rempli",
-    "meaning": "Point d'intérêt opérationnel (PI) – Lieu nécessitant une attention particulière (ex. : départ de feu, victime, fuite de gaz).",
-    "text_inside": "PI"
-   },
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Sens de circulation ou de progression des équipes – Indique la direction à suivre ou le mouvement des moyens.",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "carré",
-    "color": "noir",
-    "style": "contour seul, trait pointillé",
-    "meaning": "Zone de danger potentiel (ZDP) – Zone où les risques ne sont pas encore confirmés mais nécessitent une vigilance accrue.",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "rempli, bordure noire",
-    "meaning": "Point de transmission (PT) – Emplacement dédié aux échanges d'informations entre les équipes et le PC.",
-    "text_inside": "PT"
-   },
-   {
-    "label": "",
-    "shape": "cercle",
-    "color": "bleu",
-    "style": "rempli, bordure blanche",
-    "meaning": "Aire de soutien logistique (ASL) – Zone dédiée à la logistique (ravitaillement, maintenance, repos des équipes).",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "triangle",
-    "color": "jaune",
-    "style": "rempli",
-    "meaning": "Point de regroupement des moyens (PRM) – Lieu où sont rassemblés les engins et matériels en attente d'engagement.",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "gris",
-    "style": "rempli, bordure noire",
-    "meaning": "Zone de décontamination (ZD) – Espace aménagé pour la décontamination des intervenants ou des victimes.",
-    "text_inside": "ZD"
-   },
-   {
-    "label": "",
-    "shape": "losange",
-    "color": "rouge",
-    "style": "contour seul, trait plein",
-    "meaning": "Danger identifié (ex. : risque d'effondrement, risque chimique) – Symbole générique pour signaler un danger spécifique.",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "carré",
-    "color": "blanc",
-    "style": "rempli, bordure rouge",
-    "meaning": "Bâtiment d'intérêt (BI) – Structure nécessitant une attention particulière (ex. : école, hôpital, ERP).",
-    "text_inside": "BI"
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "noir",
-    "style": "contour seul, trait plein",
-    "meaning": "Périmètre de sécurité (PS) – Délimitation de la zone d'intervention pour en interdire l'accès au public.",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "pastille ronde",
-    "color": "vert",
-    "style": "rempli",
-    "meaning": "Aspirant (ASP) – Symbole identifiant un aspirant sapeur-pompier en intervention.",
-    "text_inside": "ASP"
-   },
-   {
-    "label": "",
-    "shape": "pastille ronde",
-    "color": "bleu",
-    "style": "rempli",
-    "meaning": "Chef d'agrès (CA) – Symbole identifiant un chef d'agrès en intervention.",
-    "text_inside": "CA"
-   },
-   {
-    "label": "",
-    "shape": "pastille ronde",
-    "color": "rouge",
-    "style": "rempli",
-    "meaning": "Chef de groupe (CG) – Symbole identifiant un chef de groupe en intervention.",
-    "text_inside": "CG"
-   },
-   {
-    "label": "",
-    "shape": "pastille ronde",
-    "color": "jaune",
-    "style": "rempli",
-    "meaning": "Conducteur (Cdt) – Symbole identifiant un conducteur d'engin en intervention.",
-    "text_inside": "Cdt"
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "rempli, bordure noire",
-    "meaning": "Centre d'incendie et de secours (CIS) – Localisation d'un centre de secours sur la carte opérationnelle.",
-    "text_inside": "CIS"
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "rempli, bordure noire",
-    "meaning": "Centre de traitement de l'alerte (CTA) – Localisation du centre de traitement des appels d'urgence.",
-    "text_inside": "CTA"
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "rempli, bordure noire",
-    "meaning": "Centre opérationnel départemental d'incendie et de secours (CODIS) – Localisation du centre de coordination des opérations.",
-    "text_inside": "CODIS"
-   }
-  ],
-  "tables": [
-   {
-    "title": "Conventions de couleurs pour les zones opérationnelles",
-    "columns": [
-     "Couleur",
-     "Signification",
-     "Exemple d'utilisation"
-    ],
-    "rows": [
-     [
-      "Rouge",
-      "Danger immédiat, zone interdite ou critique",
-      "Zone d'exclusion (ZEX), point de danger"
-     ],
-     [
-      "Orange",
-      "Alerte ou vigilance renforcée",
-      "Point de contrôle des intervenants (PCI)"
-     ],
-     [
-      "Jaune",
-      "Prudence ou zone sous surveillance",
-      "Zone de danger potentiel (ZDP)"
-     ],
-     [
-      "Vert",
-      "Sécurité ou zone contrôlée",
-      "Aire de stationnement des moyens (ASM)"
-     ],
-     [
-      "Bleu",
-      "Commandement ou coordination",
-      "Poste de commandement (PC)"
-     ],
-     [
-      "Noir",
-      "Délimitation ou périmètre",
-      "Périmètre de sécurité (PS)"
-     ],
-     [
-      "Gris",
-      "Logistique ou soutien",
-      "Zone de décontamination (ZD)"
-     ]
+{
+  "document": {
+    "title": "Mémento GOC — Outils graphiques",
+    "source_file": "Charte graphique 2025 - Impression(20260930-154014).pdf",
+    "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+    "audit_date": "2026-09-30",
+    "audit_status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+    "notes": [
+      "Conventions transcrites page par page à partir du PDF fourni.",
+      "Les pages d'exemples composés (22-23) ne sont pas utilisées pour inventer de nouvelles règles générales.",
+      "Une validation métier/formateur reste requise avant emploi comme référentiel normatif."
     ]
-   },
-   {
-    "title": "Symboles des acteurs opérationnels",
-    "columns": [
-     "Symbole",
-     "Couleur",
-     "Fonction"
-    ],
-    "rows": [
-     [
-      "Pastille ronde remplie",
-      "Vert",
-      "Aspirant (ASP)"
-     ],
-     [
-      "Pastille ronde remplie",
-      "Bleu",
-      "Chef d'agrès (CA)"
-     ],
-     [
-      "Pastille ronde remplie",
-      "Rouge",
-      "Chef de groupe (CG)"
-     ],
-     [
-      "Pastille ronde remplie",
-      "Jaune",
-      "Conducteur (Cdt)"
-     ]
-    ]
-   }
-  ],
-  "rules": [
-   "Tout symbole graphique doit être accompagné d'une légende claire et visible sur le plan opérationnel.",
-   "Les couleurs utilisées doivent respecter les conventions définies dans ce mémento pour éviter toute confusion.",
-   "Le poste de commandement (PC) doit être matérialisé dès le début de l'intervention et mis à jour en fonction de l'évolution de la situation.",
-   "Les points d'intérêt opérationnel (PI) doivent être signalés immédiatement au PC pour une prise en compte dans la manœuvre.",
-   "Les zones d'exclusion (ZEX) et les périmètres de sécurité (PS) doivent être délimités physiquement sur le terrain et reportés sur les plans.",
-   "Les symboles des acteurs opérationnels (ASP, CA, CG, Cdt) doivent être utilisés pour identifier les responsables sur le terrain et faciliter la coordination.",
-   "Les flèches de circulation ou de progression doivent être tracées dans le sens effectif du mouvement et mises à jour en temps réel.",
-   "Les zones de danger potentiel (ZDP) doivent faire l'objet d'une évaluation continue et être reclassées en zone d'exclusion (ZEX) si le danger est confirmé."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 2,
-  "title": "LES OUTILS GRAPHIQUES",
-  "sections": [
-   {
-    "heading": "",
-    "text": "La doctrine nationale diffusée par l'ENSOSP concernant la Gestion Opérationnelle et de Commandement fait référence à l'utilisation d'outils dont le but est de schématiser graphiquement et de façon dynamique les principales informations opérationnelles relatives au sinistre donné. Le recours aux outils graphiques permet de préciser et d'organiser à tout moment l’accueil, la transmission et la compréhension de l'information opérationnelle aux différents niveaux de commandement et d'exécution."
-   },
-   {
-    "heading": "",
-    "text": "L'accroissement et la diversification des risques et des situations accidentelles redoutées doublées d'une plus grande mobilité géographique des acteurs de la gestion opérationnelle, rendent indispensable l'émergence d'un référentiel \" outils graphiques \" commun, adapté et facilement assimilable."
-   },
-   {
-    "heading": "",
-    "text": "Entrepris depuis plusieurs années par l'École d'Application de Sécurité Civile de Valabre et l'École Nationale Supérieure des Officiers Sapeurs Pompiers, cet important travail d'uniformisation connaît aujourd'hui une étape nouvelle avec la formalisation d'une charte graphique rénovée et des conditions optimales de sa mise en œuvre opérationnelle."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "camion de pompier",
-    "color": "rouge et jaune",
-    "style": "trait plein, rempli",
-    "meaning": "Illisible (représente probablement un véhicule de secours et d'intervention)",
-    "text_inside": ""
-   },
-   {
-    "label": "FPT NLR",
-    "shape": "rectangle",
-    "color": "contour rouge, rempli blanc",
-    "style": "trait plein, encadré rouge épais",
-    "meaning": "Illisible (abréviation associée à un type de véhicule ou matériel opérationnel, probablement Fourgon Pompe Tonne Nouvelle Génération ou similaire)",
-    "text_inside": "FPT NLR"
-   },
-   {
-    "label": "",
-    "shape": "double flèche horizontale",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Illisible (probablement utilisé pour indiquer une direction, un mouvement ou une liaison)",
-    "text_inside": ""
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "L'utilisation des outils graphiques est essentielle pour schématiser dynamiquement les informations opérationnelles relatives à un sinistre.",
-   "Les outils graphiques doivent permettre de préciser et organiser l'accueil, la transmission et la compréhension de l'information opérationnelle à tous les niveaux de commandement et d'exécution.",
-   "Un référentiel commun d'outils graphiques est indispensable pour faire face à la diversification des risques et à la mobilité géographique des acteurs opérationnels.",
-   "La charte graphique rénovée doit être adaptée et facilement assimilable pour une mise en œuvre opérationnelle optimale."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 3,
-  "title": "Définition du langage cartographique",
-  "sections": [
-   {
-    "heading": "",
-    "text": "Chaque \"objet graphique\" renseignant le plan cartographique (engin de lutte, foyer, point de regroupement des victimes…) est un \"objet géographique\" défini à la fois par une position dans le plan et par une identité graphique."
-   },
-   {
-    "heading": "",
-    "text": "Chaque objet est caractérisé par un mode d'implantation dans le plan : implantation ponctuelle (point d'eau…), linéaire (route, ligne d'appui…) ou surfacique (sinistre, secteur opérationnel…). L'identité graphique des objets est matérialisée au travers des quatre \"variables visuelles\" décrites ci-après et utilisées, selon les thèmes, en mode exclusif ou combinatoire :"
-   },
-   {
-    "heading": "LA FORME",
-    "text": "(contour ou enveloppe des objets), de type géométrique (carré, cercle…) ou de type pictogramme, qui exprime relativement bien l'identité de l'objet et par déduction, ses différences. Les principales formes élémentaires retenues ainsi que leur signification générale sont reportées dans le tableau ci-après."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "rectangle horizontal",
-    "color": "bleu clair",
-    "style": "rempli",
-    "meaning": "Moyens et/ou infrastructures de secours",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "triangle",
-    "color": "noir",
-    "style": "rempli",
-    "meaning": "Avertissement/Actions SP/Danger",
-    "text_inside": ""
-   },
-   {
-    "shape": "flèche courbe",
-    "color": "noir",
-    "style": "contour seul",
-    "meaning": "Uniformité/Continuum spatial",
-    "text_inside": "",
-    "label": ""
-   },
-   {
-    "label": "",
-    "shape": "cercle",
-    "color": "noir",
-    "style": "contour seul",
-    "meaning": "Ressource en eau",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "étoile à quatre branches",
-    "color": "noir",
-    "style": "contour seul",
-    "meaning": "Sinistre ou composante particulière du sinistre",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "ligne droite",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Mouvement/Linéarité",
-    "text_inside": ""
-   }
-  ],
-  "tables": [
-   {
-    "title": "Formes élémentaires",
-    "columns": [
-     "Formes élémentaires",
-     "Signification"
-    ],
-    "rows": [
-     [
-      "<rectangle horizontal bleu clair>",
-      "Moyens et/ou infrastructures de secours"
-     ],
-     [
-      "<triangle noir>",
-      "Avertissement/Actions SP/Danger"
-     ],
-     [
-      "<flèche courbe noire>",
-      "Uniformité/Continuum spatial"
-     ],
-     [
-      "",
-      ""
-     ],
-     [
-      "<cercle noir contour>",
-      "Ressource en eau"
-     ],
-     [
-      "<étoile noire contour>",
-      "Sinistre ou composante particulière du sinistre"
-     ],
-     [
-      "<ligne droite noire>",
-      "Mouvement/Linéarité"
-     ]
-    ]
-   }
-  ],
-  "rules": [
-   "Chaque objet graphique sur un plan cartographique doit être défini par une position et une identité graphique.",
-   "L'identité graphique d'un objet s'exprime par son mode d'implantation : ponctuel, linéaire ou surfacique.",
-   "Les formes géométriques ou pictogrammes doivent exprimer l'identité de l'objet et ses différences par rapport aux autres objets.",
-   "Les quatre variables visuelles du langage cartographique sont la forme, la couleur, l'état et la surcharge."
-  ],
-  "model": "mistral/mistral-large-latest",
-  "review_note": "Règle « taille, orientation » hallucinée par le modèle de vision, corrigée à la main le 2026-09-15 (le mémento dit forme, couleur, état, surcharge). Relecture complète par les formateurs attendue."
- },
- {
-  "page": 4,
-  "title": "LA COULEUR. L'ÉTAT",
-  "sections": [
-   {
-    "heading": "LA COULEUR. Elle exprime des différences thématiques, six couleurs sont utilisées :",
-    "text": ""
-   },
-   {
-    "heading": "L'ÉTAT. Utilisé pour exprimer la dynamique et différencier ce qui est accompli ou en cours de ce qui est prévu ou en cours de réalisation (deux états seulement).",
-    "text": ""
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "noir",
-    "style": "rempli",
-    "meaning": "Couleur par défaut et voie d’accès",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "vert",
-    "style": "rempli",
-    "meaning": "Ayant trait aux personnes",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "rempli",
-    "meaning": "Ayant trait à l’incendie",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "bleu",
-    "style": "rempli",
-    "meaning": "Ayant trait à l’eau",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "orange",
-    "style": "rempli",
-    "meaning": "Ayant trait aux risques particuliers",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "violet",
-    "style": "rempli",
-    "meaning": "Ayant trait au commandement",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Prévu",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "noir",
-    "style": "trait plein et épais",
-    "meaning": "En cours",
-    "text_inside": ""
-   }
-  ],
-  "tables": [
-   {
-    "title": "",
-    "columns": [
-     "Couleur",
-     "Signification",
-     "Couleur",
-     "Signification"
-    ],
-    "rows": [
-     [
-      "■ (noir)",
-      "Couleur par défaut et voie d’accès",
-      "■ (bleu)",
-      "Ayant trait à l’eau"
-     ],
-     [
-      "■ (vert)",
-      "Ayant trait aux personnes",
-      "■ (orange)",
-      "Ayant trait aux risques particuliers"
-     ],
-     [
-      "■ (rouge)",
-      "Ayant trait à l’incendie",
-      "■ (violet)",
-      "Ayant trait au commandement"
-     ]
-    ]
-   }
-  ],
-  "rules": [
-   "La couleur exprime des différences thématiques et six couleurs sont utilisées pour catégoriser les éléments opérationnels.",
-   "L'état 'Prévu' est représenté par une flèche en trait simple.",
-   "L'état 'En cours' est représenté par une flèche en trait épais.",
-   "Seuls deux états sont utilisés : 'Prévu' et 'En cours'."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 5,
-  "title": "Outils graphiques",
-  "sections": [
-   {
-    "heading": "LA SURCHARGE",
-    "text": "Elle intervient en renforcement codifiés des figurés graphiques, cette surcharge peut être textuelle (abréviation, sigle, groupe horaire…) et/ou graphique."
-   },
-   {
-    "heading": "",
-    "text": "Combinées entre elles, les variables renforcent la signification thématique des objets graphiques."
-   },
-   {
-    "heading": "Déclinaison de la charte en niveaux de complexité",
-    "text": "La nature de l’opération de secours tout autant que le profil de l’utilisateur (vécu opérationnel, niveau de sollicitation…) ou les moyens matériels mis à sa disposition (support cartographique, crayons, paperboard, logiciels…) influent sur le choix du niveau de complexité de la charte graphique identifiée, selon les thèmes, un ou plusieurs niveaux de complexité imbriqués les uns aux autres et mobilisant un nombre croissant de variables visuelles. Un exemple est donné ci-dessous :"
-   }
-  ],
-  "symbols": [
-   {
-    "label": "Surcharge textuelle",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour noir plein, texte à l'intérieur",
-    "meaning": "Indication textuelle ajoutée sur un figuré graphique (exemple : abréviation, sigle, groupe horaire)",
-    "text_inside": "INC NLR"
-   },
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Indication de direction ou de mouvement",
-    "text_inside": "R+1"
-   },
-   {
-    "label": "Surcharge textuelle",
-    "shape": "ligne brisée (sinusoïdale)",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Représentation graphique d'une évolution ou d'un phénomène (exemple : lycée NLR)",
-    "text_inside": "Lycée NLR"
-   },
-   {
-    "label": "Surcharge textuelle",
-    "shape": "texte sous ligne",
-    "color": "noir",
-    "style": "texte",
-    "meaning": "Indication du nombre de victimes ou d'unités impliquées",
-    "text_inside": "7 piles de gaz\n9 victimes"
-   },
-   {
-    "label": "Surcharge graphique",
-    "shape": "rectangles verticaux groupés",
-    "color": "noir",
-    "style": "traits pleins",
-    "meaning": "Représentation graphique d'un élément ou d'une structure",
-    "text_inside": ""
-   },
-   {
-    "label": "Forme",
-    "shape": "carré",
-    "color": "blanc",
-    "style": "contour noir plein",
-    "meaning": "Variable visuelle de forme",
-    "text_inside": ""
-   },
-   {
-    "label": "Valeur",
-    "shape": "carré pointillé",
-    "color": "noir et blanc",
-    "style": "pointillés",
-    "meaning": "Variable visuelle de valeur (niveau de gris ou texture)",
-    "text_inside": ""
-   },
-   {
-    "label": "Couleur",
-    "shape": "rectangle horizontal",
-    "color": "rouge",
-    "style": "rempli",
-    "meaning": "Variable visuelle de couleur",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangles verticaux groupés",
-    "color": "noir",
-    "style": "traits pleins",
-    "meaning": "Variable visuelle de surcharge graphique (exemple : INC NLR)",
-    "text_inside": "INC NLR"
-   },
-   {
-    "label": "Moyen de secours prioritaire de type colonne",
-    "shape": "rectangle avec texte",
-    "color": "rouge et blanc",
-    "style": "contour rouge pointillé, texte en rouge",
-    "meaning": "Représentation d'un moyen de secours prioritaire de type colonne avec surcharge textuelle et graphique",
-    "text_inside": "INC NLR"
-   },
-   {
-    "label": "1er niveau",
-    "shape": "triangle",
-    "color": "noir",
-    "style": "contour noir plein",
-    "meaning": "Variable visuelle de forme et d'orientation au premier niveau de complexité",
-    "text_inside": ""
-   },
-   {
-    "label": "Forme + Orientation",
-    "shape": "texte",
-    "color": "noir",
-    "style": "texte",
-    "meaning": "Variables utilisées au premier niveau de complexité",
-    "text_inside": ""
-   },
-   {
-    "label": "2ème niveau",
-    "shape": "triangle",
-    "color": "orange",
-    "style": "rempli",
-    "meaning": "Variable visuelle de forme, orientation et couleur au deuxième niveau de complexité",
-    "text_inside": ""
-   },
-   {
-    "label": "Forme + Orientation + Couleur",
-    "shape": "texte",
-    "color": "noir",
-    "style": "texte",
-    "meaning": "Variables utilisées au deuxième niveau de complexité",
-    "text_inside": ""
-   }
-  ],
-  "tables": [
-   {
-    "title": "",
-    "columns": [
-     "Variables visuelles combinées"
-    ],
-    "rows": [
-     [
-      "Forme +",
-      "Valeur +",
-      "Couleur +",
-      "Surcharge =",
-      "Moyen de secours prioritaire de type colonne"
-     ]
-    ]
-   }
-  ],
-  "rules": [
-   "La surcharge graphique ou textuelle renforce la signification des figurés graphiques.",
-   "Les variables visuelles (forme, valeur, couleur, surcharge) peuvent être combinées pour augmenter la complexité et la précision des informations transmises.",
-   "Le choix du niveau de complexité de la charte graphique dépend de la nature de l'opération, du profil de l'utilisateur et des moyens matériels disponibles.",
-   "Un niveau de complexité croissant mobilise un nombre plus important de variables visuelles."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 6,
-  "title": "Principe de la cartographie opérationnelle",
-  "sections": [
-   {
-    "heading": "",
-    "text": "Cette cartographie opérationnelle prend la forme d’une superposition de plans thématiques liés les uns aux autres par la nature des informations.\nCes plans sont au nombre de six :"
-   },
-   {
-    "heading": "I - ANALYSE ET SCHEMATISATION DE LA ZONE D’INTERVENTION",
-    "text": "La qualification des composantes essentielles de la zone d’intervention au regard de l’opération en cours. Ces dernières sont synthétisées graphiquement et le plan cartographique qui en résulte constitue le fond de carte de base de la cartographie opérationnelle (SITAC + Ordres Graphiques)."
-   },
-   {
-    "heading": "II - LOCALISATION DU SINISTRE (centres et zones d’action)",
-    "text": "Le sinistre est délimité dans l’espace et dans le temps. Cette délimitation peut être de type ponctuel ou surfacique et le sinistre rattaché à une opération de secours peut comporter plusieurs composantes ponctuelles ou surfaciques. Ces dernières sont identifiées comme des centres et/ou des zones d’action actuels ou potentiels."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "Données contextuelles",
-    "shape": "polygone irrégulier",
-    "color": "noir",
-    "style": "contour seul, trait fin",
-    "meaning": "Données contextuelles de la zone d’intervention",
-    "text_inside": ""
-   },
-   {
-    "label": "Sectorisation opérationnelle",
-    "shape": "polygone irrégulier",
-    "color": "noir",
-    "style": "contour seul, trait fin",
-    "meaning": "Sectorisation opérationnelle",
-    "text_inside": ""
-   },
-   {
-    "label": "Moyens",
-    "shape": "polygone irrégulier",
-    "color": "noir",
-    "style": "contour seul, trait fin",
-    "meaning": "Moyens engagés ou disponibles",
-    "text_inside": ""
-   },
-   {
-    "label": "Actions",
-    "shape": "polygone irrégulier",
-    "color": "noir",
-    "style": "contour seul, trait fin",
-    "meaning": "Actions en cours ou prévues",
-    "text_inside": ""
-   },
-   {
-    "label": "Analyse de la zone d’intervention",
-    "shape": "polygone irrégulier",
-    "color": "noir",
-    "style": "contour seul, trait fin",
-    "meaning": "Analyse de la zone d’intervention",
-    "text_inside": ""
-   },
-   {
-    "label": "Localisation du sinistre (centre et zone d’action)",
-    "shape": "étoile à huit branches",
-    "color": "bleu",
-    "style": "rempli, trait plein",
-    "meaning": "Localisation du sinistre (centre et zone d’action)",
-    "text_inside": "1+8+3+3+5+5+6"
-   },
-   {
-    "label": "",
-    "shape": "flèche large",
-    "color": "bleu",
-    "style": "rempli, trait plein",
-    "meaning": "Sens de l’analyse ou de la progression opérationnelle",
-    "text_inside": ""
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "La cartographie opérationnelle repose sur la superposition de six plans thématiques liés par la nature des informations.",
-   "Le premier plan consiste en l’analyse et la schématisation des composantes essentielles de la zone d’intervention, constituant le fond de carte de base (SITAC + Ordres Graphiques).",
-   "Le sinistre doit être délimité dans l’espace et dans le temps, sous forme ponctuelle ou surfacique, et peut comporter plusieurs centres ou zones d’action actuels ou potentiels.",
-   "Les données contextuelles, la sectorisation opérationnelle, les moyens, les actions et l’analyse de la zone d’intervention doivent être représentés par des plans distincts superposés.",
-   "La localisation du sinistre est représentée par une étoile à huit branches bleue remplie, indiquant le centre et la zone d’action."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 7,
-  "title": "III - ACTIONS\nIV - MOYENS\nV - ORGANISATION OPERATIONNELLE DE LA ZONE D'INTERVENTION\nVI - COLLECTE ET MISE A JOUR DES DONNEES CONTEXTUELLES ASSOCIEES A L'OPERATION",
-  "sections": [
-   {
-    "heading": "",
-    "text": "Chaque centre ou zone d’action est obligatoirement rattaché à un secteur, fonctionnel (rattachement thématique implicite) ou géographique (rattachement par correspondance spatiale)."
-   },
-   {
-    "heading": "III - ACTIONS",
-    "text": "Ce plan matérialise toutes les actions de secours engagées (SITAC) ou à engager (Ordres Graphiques). Chaque action représentée est obligatoirement associée à un centre ou à une zone d’action. Une action ne peut être rattachée qu’à un centre ou à une zone d’action ; à l’inverse, un centre ou une zone d’action peut être concerné par plusieurs actions."
-   },
-   {
-    "heading": "IV - MOYENS",
-    "text": "Ce plan matérialise tous les moyens d’intervention engagés (SITAC) ou à engager (Ordres Graphiques) ; il comprend aussi les moyens de type \"ressources, infrastructures et logistiques opérationnelles\". Les moyens d’intervention engagés ou à engager sont obligatoirement rattachés à une action définie préalablement (action en cours ou projetée). Un moyen peut être rattaché à plusieurs actions et une action peut concerner plusieurs moyens. Seuls les moyens de type \"moyens d’intervention aériens\", \"moyens de commandement et de coordination opérationnelle\" et \"ressources, infrastructures et logistiques opérationnelles\" ne font pas l’objet de rattachement à une action."
-   },
-   {
-    "heading": "V - ORGANISATION OPERATIONNELLE DE LA ZONE D'INTERVENTION",
-    "text": "Ce plan décrit l’implantation des moyens de commandement et de coordination opérationnelle ainsi que la définition des secteurs d’activité et de commandement (fonctionnels ou géographiques)."
-   },
-   {
-    "heading": "VI - COLLECTE ET MISE A JOUR DES DONNEES CONTEXTUELLES ASSOCIEES A L'OPERATION",
-    "text": "Ce plan contient les informations contextuelles liées à l’opération en cours (paramètres météorologiques et astronomiques) ainsi que les paramètres d’habillage de la carte (échelle/orientation)."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "pastille rectangulaire verticale bleue",
-    "color": "bleu",
-    "style": "contour seul avec fond blanc",
-    "meaning": "Numéro de page et symbole de l’ENSOSP (logo illisible dans ce contexte)",
-    "text_inside": "7"
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Chaque centre ou zone d’action doit être obligatoirement rattaché à un secteur, fonctionnel ou géographique.",
-   "Toute action de secours engagée ou à engager doit être matérialisée sur le plan et associée à un centre ou une zone d’action unique.",
-   "Un centre ou une zone d’action peut concerner plusieurs actions.",
-   "Les moyens d’intervention engagés ou à engager doivent être obligatoirement rattachés à une action définie préalablement.",
-   "Un moyen d’intervention peut être rattaché à plusieurs actions.",
-   "Seuls les moyens de type 'moyens d’intervention aériens', 'moyens de commandement et de coordination opérationnelle', et 'ressources, infrastructures et logistiques opérationnelles' ne sont pas rattachés à une action.",
-   "Le plan doit décrire l’implantation des moyens de commandement et de coordination opérationnelle ainsi que la définition des secteurs d’activité et de commandement (fonctionnels ou géographiques).",
-   "Le plan doit contenir les informations contextuelles liées à l’opération (paramètres météorologiques et astronomiques) et les paramètres d’habillage de la carte (échelle/orientation)."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 8,
-  "title": "I - ANALYSE DE LA ZONE D'INTERVENTION",
-  "sections": [
-   {
-    "heading": "1.1 RESSOURCES DE LA ZONE D'INTERVENTION",
-    "text": "- Cheminements\nLes cheminements matérialisent les voies de communication empruntables par les moyens de secours et les personnels."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "ligne avec deux ronds aux extrémités",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Accès",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "ligne horizontale",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Rocade",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "ligne avec une flèche à droite",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Pénétrante",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "ligne en pointillés",
-    "color": "noir",
-    "style": "pointillé",
-    "meaning": "Évolution limitée",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "ligne avec une flèche à double sens",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Sens de circulation",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "étoile ou croix",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Circulation impossible",
-    "text_inside": ""
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Les cheminements matérialisent les voies de communication empruntables par les moyens de secours et les personnels."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 9,
-  "title": "1.2 CONFIGURATION DE LA ZONE D'INTERVENTION - Morphologie de la zone d'intervention",
-  "sections": [
-   {
-    "heading": "",
-    "text": "- Prises d'eau\nLes prises d'eau sont des points d'alimentation en eau pour les moyens de secours terrestres ou aériens"
-   }
-  ],
-  "symbols": [
-   {
-    "label": "P prise d'eau pérenne",
-    "shape": "cercle",
-    "color": "bleu",
-    "style": "trait plein rempli",
-    "meaning": "Prise d'eau pérenne (PI - BI - ASP)",
-    "text_inside": "P"
-   },
-   {
-    "label": "P prise d'eau non pérenne",
-    "shape": "cercle",
-    "color": "bleu",
-    "style": "contour seul",
-    "meaning": "Prise d'eau non pérenne : PI - BI - ASP - CIT",
-    "text_inside": "P"
-   },
-   {
-    "label": "Point de ravitaillement (pour ABE et HBE)",
-    "shape": "croix",
-    "color": "bleu",
-    "style": "trait plein",
-    "meaning": "Point de ravitaillement (pour ABE et HBE)",
-    "text_inside": ""
-   },
-   {
-    "label": "Caractéristiques",
-    "shape": "cercle",
-    "color": "bleu",
-    "style": "trait plein rempli",
-    "meaning": "Caractéristiques de la prise d'eau (exemple)",
-    "text_inside": "P100"
-   },
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Direction de la pente (la flèche vise le bas de la pente)",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle vertical",
-    "color": "noir",
-    "style": "trait plein rempli",
-    "meaning": "Intensité de la pente : faible",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle vertical hachuré (deux hachures)",
-    "color": "noir",
-    "style": "hachuré",
-    "meaning": "Intensité de la pente : modérée",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle vertical hachuré (trois hachures)",
-    "color": "noir",
-    "style": "hachuré",
-    "meaning": "Intensité de la pente : forte",
-    "text_inside": ""
-   }
-  ],
-  "tables": [
-   {
-    "title": "Élévation :",
-    "columns": [
-     "Description"
-    ],
-    "rows": [
-     [
-      "Elle est donnée en mètres ou en nombre de niveaux par rapport au sol."
-     ],
-     [
-      "<-141",
-      "Point côté (élévation en mètres)"
-     ],
-     [
-      "R+2",
-      "Niveau en nombre de niveaux par rapport au niveau 0"
-     ]
-    ]
-   },
-   {
-    "title": "Déclivité :",
-    "columns": [
-     "Description"
-    ],
-    "rows": [
-     [
-      "Elle décrit en un point donné l'inclinaison du plan par rapport à l'horizontale. Elle est matérialisée par une flèche pointant vers le bas de la direction et l'inclinaison de la pente."
-     ],
-     [
-      "Direction de la pente (la flèche vise le bas de la pente)"
-     ],
-     [
-      "Intensité de la pente :"
-     ],
-     [
-      "faible",
-      "▇ (rectangle plein)"
-     ],
-     [
-      "modérée",
-      "▇ (rectangle à deux hachures)"
-     ],
-     [
-      "forte",
-      "▇ (rectangle à trois hachures)"
-     ],
-     [
-      "La couleur de remplissage est envisagée pour la matérialisation des lignes de crête (rouge) et des thalwegs (bleu) et la construction de chevaux de terrain."
-     ]
-    ]
-   }
-  ],
-  "rules": [
-   "Les prises d'eau pérennes sont représentées par un cercle bleu rempli avec la lettre P à l'intérieur (PI - BI - ASP).",
-   "Les prises d'eau non pérennes sont représentées par un cercle bleu non rempli avec la lettre P à l'intérieur (PI - BI - ASP - CIT).",
-   "Le point de ravitaillement pour ABE et HBE est représenté par une croix bleue.",
-   "L'élévation est indiquée soit en mètres, soit en nombre de niveaux par rapport au niveau du sol (exemple : -141 ou R+2).",
-   "La déclivité est matérialisée par une flèche pointant vers le bas de la pente, associée à un rectangle indiquant l'intensité (faible, modérée, forte).",
-   "La couleur rouge est utilisée pour matérialiser les lignes de crête, et la couleur bleue pour les thalwegs."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 10,
-  "title": "-Sources de danger",
-  "sections": [
-   {
-    "heading": "",
-    "text": "Les sources de danger sont des entités à composante humaine, matérielle… qui constituent un danger réel pour les personnes, les biens ou l’environnement (barrage endommagé, source radioactive, personnes contaminées…). Le danger est caractérisé du point de vue du type."
-   },
-   {
-    "heading": "Points sensibles",
-    "text": "Les points sensibles sont des entités à composante humaine, matérielle… identifiées comme étant sensibles et présentant un enjeu réel en terme de protection (regroupement de personnes à mobilité réduite, stockage de produits à forte valeur ajoutée…)."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "triangle",
-    "color": "blanc",
-    "style": "contour noir, trait plein, rempli en blanc",
-    "meaning": "Source de danger",
-    "text_inside": "Δ"
-   },
-   {
-    "label": "Composante humaine",
-    "shape": "pastille triangulaire",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Composante humaine",
-    "text_inside": ""
-   },
-   {
-    "label": "Composante incidente",
-    "shape": "pastille triangulaire",
-    "color": "jaune",
-    "style": "trait plein, rempli",
-    "meaning": "Composante 'risques particuliers'",
-    "text_inside": ""
-   },
-   {
-    "label": "Composante 'ayant trait à l’eau'",
-    "shape": "pastille triangulaire",
-    "color": "bleu",
-    "style": "trait plein, rempli",
-    "meaning": "Composante 'ayant trait à l’eau'",
-    "text_inside": ""
-   },
-   {
-    "label": "N : Nucléaire",
-    "shape": "pastille triangulaire",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Type de danger : Nucléaire",
-    "text_inside": "N"
-   },
-   {
-    "label": "R : Radiologique",
-    "shape": "pastille triangulaire",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Type de danger : Radiologique",
-    "text_inside": "R"
-   },
-   {
-    "label": "C : Chimique",
-    "shape": "pastille triangulaire",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Type de danger : Chimique",
-    "text_inside": "C"
-   },
-   {
-    "label": "E : Électrique",
-    "shape": "pastille triangulaire",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Type de danger : Électrique",
-    "text_inside": "E"
-   },
-   {
-    "label": "",
-    "shape": "triangle inversé",
-    "color": "blanc",
-    "style": "contour noir, trait plein, rempli en blanc",
-    "meaning": "Point sensible",
-    "text_inside": "∇"
-   },
-   {
-    "label": "Composante humaine",
-    "shape": "pastille triangulaire inversée",
-    "color": "vert",
-    "style": "trait plein, rempli",
-    "meaning": "Composante humaine",
-    "text_inside": ""
-   },
-   {
-    "label": "Composante incidente",
-    "shape": "pastille triangulaire inversée",
-    "color": "jaune",
-    "style": "trait plein, rempli",
-    "meaning": "Composante 'risques particuliers'",
-    "text_inside": ""
-   },
-   {
-    "label": "Composante 'ayant trait à l’eau'",
-    "shape": "pastille triangulaire inversée",
-    "color": "bleu",
-    "style": "trait plein, rempli",
-    "meaning": "Composante 'ayant trait à l’eau'",
-    "text_inside": ""
-   },
-   {
-    "label": "N : Nucléaire",
-    "shape": "pastille triangulaire inversée",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Type de danger : Nucléaire",
-    "text_inside": "N"
-   },
-   {
-    "label": "R : Radiologique",
-    "shape": "pastille triangulaire inversée",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Type de danger : Radiologique",
-    "text_inside": "R"
-   },
-   {
-    "label": "C : Chimique",
-    "shape": "pastille triangulaire inversée",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Type de danger : Chimique",
-    "text_inside": "C"
-   },
-   {
-    "label": "E : Électrique",
-    "shape": "pastille triangulaire inversée",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Type de danger : Électrique",
-    "text_inside": "E"
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Les sources de danger sont des entités à composante humaine, matérielle ou environnementale caractérisées par leur type (nucléaire, radiologique, chimique, électrique).",
-   "Les points sensibles sont des entités identifiées comme présentant un enjeu réel en termes de protection des personnes, des biens ou de l’environnement."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 11,
-  "title": "II - LE SINISTRE",
-  "sections": [
-   {
-    "heading": "2.1 CENTRES ET ZONES D'ACTION",
-    "text": "Le sinistre correspond à la (aux) portion(s) d'espace de la zone d'intervention affectée(s) par la manifestation du risque.\n\nIl est matérialisé au travers de centres d'action (matérialisation ponctuelle) ou de zones d'action (matérialisation surfacique) identifiant des chantiers à traiter dans le futur ou en cours de traitement.\n\nUn centre ou une zone d'action est une entité qui naît (au moment de l'information), vit (cinétique propre du chantier et de ses composantes, engagement / désengagement d'actions et de moyens) et meurt (fin des actions et désengagement total des moyens).\n\nDes informations textuelles de type identifiant ou caractéristiques sont associables aux figurés graphiques."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "Centre d'action",
-    "shape": "étoile à quatre branches",
-    "color": "noir",
-    "style": "contour seul, trait plein",
-    "meaning": "Centre d'action (matérialisation ponctuelle)",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle horizontal",
-    "color": "noir",
-    "style": "contour seul, trait plein",
-    "meaning": "Zone d'action (matérialisation surfacique)",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "étoile à cinq branches",
-    "color": "rouge",
-    "style": "rempli, trait plein",
-    "meaning": "Illisible",
-    "text_inside": ""
-   },
-   {
-    "label": "catégorie",
-    "shape": "rectangle horizontal",
-    "color": "rouge",
-    "style": "contour seul, trait plein",
-    "meaning": "Catégorie de composante",
-    "text_inside": ""
-   },
-   {
-    "label": "Composante humaine",
-    "shape": "ligne avec pastille",
-    "color": "vert",
-    "style": "trait plein",
-    "meaning": "Composante humaine",
-    "text_inside": ""
-   },
-   {
-    "label": "Composante incendie",
-    "shape": "ligne avec pastille",
-    "color": "rouge",
-    "style": "trait plein",
-    "text_inside": ""
-   },
-   {
-    "label": "Composante 'risques particuliers'",
-    "shape": "ligne avec pastille",
-    "color": "orange",
-    "style": "trait plein",
-    "text_inside": ""
-   },
-   {
-    "label": "Composante 'ayant trait à l'eau'",
-    "shape": "ligne avec pastille",
-    "color": "bleu",
-    "style": "trait plein",
-    "text_inside": ""
-   },
-   {
-    "label": "identifiant",
-    "shape": "nuage de dialogue",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "Identifiant du centre ou de la zone d'action",
-    "text_inside": ""
-   },
-   {
-    "label": "niveau",
-    "shape": "rectangle horizontal",
-    "color": "noir",
-    "style": "contour seul, trait plein",
-    "meaning": "Niveau de détail ou d'intervention",
-    "text_inside": ""
-   },
-   {
-    "label": "9 victimes\n7 billes de gaz",
-    "shape": "étoile éclatée à cinq branches",
-    "color": "rouge",
-    "style": "rempli dégradé, trait plein",
-    "meaning": "Caractéristiques associées (exemples : nombre de victimes, quantité de matériel)",
-    "text_inside": ""
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Un sinistre est matérialisé par des centres d'action (ponctuels) ou des zones d'action (surfaciques).",
-   "Un centre ou une zone d'action naît, vit et meurt selon l'évolution du chantier et des moyens engagés.",
-   "Des informations textuelles (identifiants ou caractéristiques) doivent être associées aux figurés graphiques des centres ou zones d'action."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 12,
-  "title": "2.0 Développement du sinistre",
-  "sections": [
-   {
-    "heading": "",
-    "text": "Cette notion est utilisée surtout en feux de forêt. Elle évolue en fonction du sens du vent et du relief."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "rouge",
-    "style": "trait plein épais",
-    "meaning": "Détermination de l'axe principal de propagation du sinistre (lié au sens du vent)",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "rouge",
-    "style": "trait plein épais courbé",
-    "meaning": "Détermination de l'axe secondaire de propagation du sinistre (lié au relief)",
-    "text_inside": ""
-   },
-   {
-    "label": "T + 30",
-    "shape": "texte",
-    "color": "noir",
-    "style": "normal",
-    "meaning": "",
-    "text_inside": "T + 30"
-   },
-   {
-    "label": "T + 1h",
-    "shape": "texte",
-    "color": "noir",
-    "style": "normal",
-    "meaning": "",
-    "text_inside": "T + 1h"
-   },
-   {
-    "label": "T + 1h30",
-    "shape": "texte",
-    "color": "noir",
-    "style": "normal",
-    "meaning": "",
-    "text_inside": "T + 1h30"
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Le développement du sinistre en feux de forêt est représenté par des axes de propagation principaux et secondaires, déterminés respectivement par le sens du vent et le relief.",
-   "Les axes de propagation sont matérialisés par des flèches rouges à trait plein épais.",
-   "Les évolutions temporelles du sinistre sont indiquées par des annotations T + 30, T + 1h, T + 1h30."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 13,
-  "title": "III - LES ACTIONS",
-  "sections": [
-   {
-    "heading": "3.1 LES ACTIONS",
-    "text": "Elles correspondent aux manœuvres de secours réalisées. La cartographie s’appuie sur une typologie de 3 types d’actions : reconnaissances, actions offensives et actions défensives."
-   },
-   {
-    "heading": "- Reconnaissances",
-    "text": "Les reconnaissances sont des actions d’exploration initiale des chantiers consistant à recueillir des informations sur les caractéristiques intrinsèques et extrinsèques dudit chantier pour définir des actions à conduire appropriées.\n\nUne reconnaissance peut être globale ou orientée thématiquement (recherche d’un foyer, recherche de personnes…) positionnée dans l’espace et planifiée dans le temps (en cours ou à venir, 'à partir de 15h00'…)."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Action précédente en cours",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle horizontal",
-    "color": "gris clair",
-    "style": "contour seul, trait plein",
-    "meaning": "statut",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle horizontal avec flèche à droite",
-    "color": "rouge",
-    "style": "trait plein, rempli",
-    "meaning": "Action en cours",
-    "text_inside": ""
-   },
-   {
-    "label": "Lié au secours à personne",
-    "shape": "pastille",
-    "color": "vert",
-    "style": "trait plein, rempli",
-    "meaning": "catégorie",
-    "text_inside": ""
-   },
-   {
-    "label": "Lié à l’extinction/incendie",
-    "shape": "pastille",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "catégorie",
-    "text_inside": ""
-   },
-   {
-    "label": "Lié aux 'risques particuliers'",
-    "shape": "pastille",
-    "color": "rouge",
-    "style": "trait plein, rempli",
-    "meaning": "catégorie",
-    "text_inside": ""
-   },
-   {
-    "label": "Lié à l’Eau",
-    "shape": "rectangle horizontal",
-    "color": "bleu",
-    "style": "trait plein, rempli",
-    "meaning": "catégorie",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle horizontal avec flèche à droite",
-    "color": "gris clair",
-    "style": "contour seul, trait plein",
-    "meaning": "position",
-    "text_inside": "R+1"
-   },
-   {
-    "label": "",
-    "shape": "rectangle horizontal avec flèche à droite",
-    "color": "gris clair",
-    "style": "contour seul, trait pointillé",
-    "meaning": "planification",
-    "text_inside": "11500"
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Les actions de secours sont classées en trois types : reconnaissances, actions offensives et actions défensives.",
-   "Les reconnaissances visent à recueillir des informations sur les caractéristiques intrinsèques et extrinsèques d’un chantier pour définir les actions appropriées.",
-   "Une reconnaissance peut être globale ou orientée thématiquement (ex. : recherche de foyer, recherche de personnes).",
-   "Une reconnaissance est positionnée dans l’espace et planifiée dans le temps (en cours, à venir, ou à une heure précise)."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 14,
-  "title": "Actions offensives",
-  "sections": [
-   {
-    "heading": "",
-    "text": "Les actions offensives sont des actions (en cours ou à venir) provoquées par les sapeurs-pompiers dans le but de prendre le devant sur la cinétique propre du sinistre. Une action offensive peut être globale ou orientée thématiquement (attaque d’un foyer, désincarcération, épuisement…) positionnée dans l’espace (en cours ou à venir, \"à partir de 15h00\"…) et planifiée dans le temps et l’espace."
-   },
-   {
-    "heading": "La position d’action par rapport au centre ou à la zone d’action tout autant que le mode de combinaison des actions entres elles, donnent un sens particulier à l’action.",
-    "text": ""
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Sens de progression ou d'évolution de l'action",
-    "text_inside": ""
-   },
-   {
-    "label": "Action prévue",
-    "shape": "rectangle horizontal",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": ""
-   },
-   {
-    "label": "Action en cours",
-    "shape": "rectangle horizontal avec flèche verte à droite",
-    "color": "vert",
-    "style": "contour seul, trait plein, flèche pleine verte",
-    "meaning": "",
-    "text_inside": ""
-   },
-   {
-    "label": "Lié au secours à personne",
-    "shape": "pastille",
-    "color": "vert",
-    "style": "rempli",
-    "meaning": "",
-    "text_inside": ""
-   },
-   {
-    "label": "Lié à l'extinction/incendie",
-    "shape": "pastille",
-    "color": "rouge",
-    "style": "rempli",
-    "meaning": "",
-    "text_inside": ""
-   },
-   {
-    "label": "Lié aux \"risques particuliers\"",
-    "shape": "pastille",
-    "color": "orange",
-    "style": "rempli",
-    "meaning": "",
-    "text_inside": ""
-   },
-   {
-    "label": "Lié à l'eau",
-    "shape": "pastille",
-    "color": "bleu",
-    "style": "rempli",
-    "meaning": "",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "étoile à cinq branches",
-    "color": "vert",
-    "style": "rempli",
-    "meaning": "Positionnement dans l'espace et le temps (exemple : à partir de 15h00)",
-    "text_inside": "1500"
-   },
-   {
-    "label": "",
-    "shape": "flèches divergentes",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Actions localisées et indépendantes",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "flèches convergentes",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Actions simultanées et concertées (jalonnement)",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "flèche circulaire (aller et retour)",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Actions décidées en aller et retour (navette)",
-    "text_inside": ""
-   },
-   {
-    "label": "NED : neutralisation",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "NED"
-   },
-   {
-    "label": "EVAC : évacuation",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "EVAC"
-   },
-   {
-    "label": "SR : désincarcération",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "SR"
-   },
-   {
-    "label": "RECH : recherche de personnes",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "RECH"
-   },
-   {
-    "label": "EXP : épuisement",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "EXP"
-   },
-   {
-    "label": "EMUL : attaque mouse",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "EMUL"
-   },
-   {
-    "label": "VENT : ventilation",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "VENT"
-   },
-   {
-    "label": "TRAIT : traitement pollution",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "TRAIT"
-   },
-   {
-    "label": "MESU : mesures",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "MESU"
-   },
-   {
-    "label": "RECO : reconnaissance/éclairement",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "RECO"
-   },
-   {
-    "label": "SAUV : sauvetage de biens",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "SAUV"
-   },
-   {
-    "label": "ALIM : alimentation",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour seul, trait plein",
-    "meaning": "",
-    "text_inside": "ALIM"
-   }
-  ],
-  "tables": [
-   {
-    "title": "",
-    "columns": [
-     "statut",
-     "position",
-     "type d'action",
-     "planification"
-    ],
-    "rows": [
-     [
-      "Action prévue",
-      "",
-      "",
-      ""
-     ],
-     [
-      "Action en cours",
-      "X : 50\nY : 50",
-      "",
-      ""
-     ],
-     [
-      "",
-      "",
-      "catégorie",
-      ""
-     ],
-     [
-      "",
-      "",
-      "Liés aux secours à personne (pastille verte)",
-      ""
-     ],
-     [
-      "",
-      "",
-      "Liés à l'extinction/incendie (pastille rouge)",
-      ""
-     ],
-     [
-      "",
-      "",
-      "Liés aux \"risques particuliers\" (pastille orange)",
-      ""
-     ],
-     [
-      "",
-      "",
-      "Liés à l'eau (pastille bleue)",
-      ""
-     ]
-    ]
-   }
-  ],
-  "rules": [
-   "Les actions offensives visent à prendre le devant sur la cinétique propre du sinistre.",
-   "Une action offensive peut être globale ou thématiquement orientée (exemples : attaque d’un foyer, désincarcération, épuisement).",
-   "Une action offensive est positionnée dans l’espace et le temps (exemple : à partir de 15h00).",
-   "La position d’action par rapport au centre ou à la zone d’action, ainsi que le mode de combinaison des actions entre elles, donnent un sens particulier à l’action.",
-   "Les actions peuvent être localisées et indépendantes, simultanées et concertées (jalonnement), ou décidées en aller et retour (navette)."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 15,
-  "title": "Action offensive aérienne",
-  "sections": [
-   {
-    "heading": "",
-    "text": "Action offensive aérienne.\nHélicoptère Bombardier d'Eau (HBE)"
-   },
-   {
-    "heading": "",
-    "text": "Action offensive aérienne.\nAvion Bombardier d'Eau (ABE)"
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "cercle",
-    "color": "bleu",
-    "style": "trait plein épais, contour seul",
-    "meaning": "Largage HBE EAU",
-    "text_inside": "CCC"
-   },
-   {
-    "label": "",
-    "shape": "cercle",
-    "color": "orange",
-    "style": "trait plein épais, contour seul avec bordure intérieure",
-    "meaning": "Largage HBE RETARDANT",
-    "text_inside": "CCC"
-   },
-   {
-    "label": "",
-    "shape": "avion stylisé (forme allongée)",
-    "color": "noir",
-    "style": "trait plein fin, contour seul",
-    "meaning": "Avion Bombardier d'Eau (ABE)",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "avion stylisé (forme allongée) inscrit dans un cercle",
-    "color": "bleu",
-    "style": "trait plein épais, contour seul",
-    "meaning": "Largage ABE EAU",
-    "text_inside": "CCC"
-   },
-   {
-    "label": "",
-    "shape": "avion stylisé (forme allongée) inscrit dans un cercle",
-    "color": "orange",
-    "style": "trait plein épais, contour seul avec bordure intérieure",
-    "meaning": "Largage ABE RETARDANT",
-    "text_inside": "CCC"
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Les symboles représentant un largage d'eau ou de retardant par hélicoptère (HBE) sont des cercles avec l'abréviation 'CCC' à l'intérieur, en trait épais, respectivement bleu pour l'eau et orange pour le retardant.",
-   "Les symboles représentant un largage d'eau ou de retardant par avion (ABE) intègrent la forme stylisée d'un avion dans un cercle, avec l'abréviation 'CCC' à l'intérieur, respectivement bleu pour l'eau et orange pour le retardant.",
-   "Les termes 'EAU' et 'RETARDANT' doivent être utilisés pour distinguer le type de largage dans les légendes associées aux symboles."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 16,
-  "title": "Actions défensives",
-  "sections": [
-   {
-    "heading": "",
-    "text": "Les actions défensives sont des actions (en cours ou à venir) mises en œuvre par les sapeurs-pompiers dans le but de faire barrage à la progression d’un phénomène dynamique."
-   },
-   {
-    "heading": "",
-    "text": "Une action défensive peut être globale ou orientée thématiquement (ligne d’appui en feu de forêt, endiguement couratif), positionnée dans l’espace et planifiée dans le temps (en cours ou à venir, \"à partir de 15h00\"…)."
-   },
-   {
-    "heading": "",
-    "text": "Le défensif mis en œuvre peut être de 2 types : linéaire (ligne d’arrêt…) ou périmétrique (protection de point sensible, confinement…)."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "triangle",
-    "color": "bleu",
-    "style": "rempli avec bordure blanche",
-    "meaning": "Défensif linéaire",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "triangle",
-    "color": "bleu clair",
-    "style": "contour seul, hachures internes",
-    "meaning": "Action prévue",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "triangle",
-    "color": "bleu",
-    "style": "rempli",
-    "meaning": "Action en cours",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "étoile à huit branches",
-    "color": "vert",
-    "style": "contour seul",
-    "meaning": "Défensif périmétrique",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "cercle",
-    "color": "vert",
-    "style": "contour seul",
-    "meaning": "Défensif périmétrique",
-    "text_inside": ""
-   },
-   {
-    "label": "Action liée aux secours à victime (recherche, extraction, mise en sécurité / confinement)",
-    "shape": "rectangle",
-    "color": "vert",
-    "style": "trait plein",
-    "meaning": "Action liée aux secours à victime (recherche, extraction, mise en sécurité / confinement)",
-    "text_inside": ""
-   },
-   {
-    "label": "Action liée à l'extinction / incendie (ligne d'arrêt / protection de points sensibles)",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein",
-    "meaning": "Action liée à l'extinction / incendie (ligne d'arrêt / protection de points sensibles)",
-    "text_inside": ""
-   },
-   {
-    "label": "Action liée aux risques particuliers (barrage écran / isolement)",
-    "shape": "rectangle",
-    "color": "orange",
-    "style": "trait plein",
-    "meaning": "Action liée aux risques particuliers (barrage écran / isolement)",
-    "text_inside": ""
-   },
-   {
-    "label": "Action liée à l'eau (alimentation / protection de point sensible)",
-    "shape": "rectangle",
-    "color": "bleu",
-    "style": "trait plein",
-    "meaning": "Action liée à l'eau (alimentation / protection de point sensible)",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "triangle",
-    "color": "bleu",
-    "style": "rempli avec bordure blanche",
-    "meaning": "position",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "gris",
-    "style": "trait plein",
-    "meaning": "planification",
-    "text_inside": "1500"
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Une action défensive est une mesure de barrage à la progression d'un phénomène dynamique mise en œuvre par les sapeurs-pompiers.",
-   "Une action défensive peut être globale ou thématiquement orientée (exemple : ligne d’appui en feu de forêt, endiguement).",
-   "Une action défensive est positionnée dans l’espace et planifiée dans le temps (en cours, à venir, à partir d’une heure précise).",
-   "Le défensif mis en œuvre peut être de type linéaire ou périmétrique.",
-   "Les symboles graphiques doivent être utilisés pour représenter le statut (prévu, en cours) et la catégorie (linéaire, périmétrique) des actions défensives."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 17,
-  "title": "IV - LES MOYENS",
-  "sections": [
-   {
-    "heading": "4.1 MOYENS DE COMMANDEMENT ET DE COORDINATION",
-    "text": "Les moyens de commandement et de coordination opérationnelle comprennent les outils à disposition du COS chef de colonne ou chef de site pour structurer son commandement sur le terrain."
-   },
-   {
-    "heading": "- Poste de commandement",
-    "text": ""
-   },
-   {
-    "heading": "- Point de transit",
-    "text": ""
-   }
-  ],
-  "symbols": [
-   {
-    "label": "Poste de commandement",
-    "shape": "rectangle avec encoche en haut à gauche",
-    "color": "blanc",
-    "style": "contour noir, trait plein",
-    "meaning": "Poste de commandement (PC de colonne ou PC de site)",
-    "text_inside": "P"
-   },
-   {
-    "label": "statut",
-    "shape": "rectangle horizontal divisé en deux",
-    "color": "blanc",
-    "style": "contour noir, trait plein",
-    "meaning": "Statut du poste de commandement",
-    "text_inside": ""
-   },
-   {
-    "label": "Prévu",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour noir pointillé",
-    "meaning": "Poste de commandement prévu",
-    "text_inside": ""
-   },
-   {
-    "label": "Actif",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour noir trait plein",
-    "meaning": "Poste de commandement actif",
-    "text_inside": ""
-   },
-   {
-    "label": "type",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour noir trait plein",
-    "meaning": "Type de poste de commandement (PC de colonne ou PC 9 fonctions / PC de site)",
-    "text_inside": "*** PC de colonne ou PC 9 fonctions\n*** PC de site"
-   },
-   {
-    "label": "désignation",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour noir trait plein",
-    "meaning": "Désignation (au centre du symbole, insertion du trigramme de la commune ou se situe le sinistre).",
-    "text_inside": ""
-   },
-   {
-    "label": "Point de transit",
-    "shape": "losange avec flèches internes",
-    "color": "blanc",
-    "style": "contour noir trait plein",
-    "meaning": "Point de transit",
-    "text_inside": ""
-   },
-   {
-    "label": "statut",
-    "shape": "rectangle horizontal divisé en deux",
-    "color": "blanc",
-    "style": "contour noir trait plein",
-    "meaning": "Statut du point de transit",
-    "text_inside": ""
-   },
-   {
-    "label": "Prévu",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour noir pointillé",
-    "meaning": "Point de transit prévu",
-    "text_inside": ""
-   },
-   {
-    "label": "Actif",
-    "shape": "cercle",
-    "color": "rouge",
-    "style": "trait plein",
-    "meaning": "Point de transit actif",
-    "text_inside": ""
-   },
-   {
-    "label": "identifiant",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "contour noir trait plein",
-    "meaning": "Identifiant du point de transit (numéro)",
-    "text_inside": "1, 2, ..."
-   }
-  ],
-  "tables": [
-   {
-    "title": "Poste de commandement",
-    "columns": [
-     "statut",
-     "type",
-     "désignation"
-    ],
-    "rows": [
-     [
-      "Prévu ...",
-      "Actif ...",
-      "*** PC de colonne ou PC 9 fonctions\n*** PC de site\n(désignation au centre du symbole, insertion du trigramme de la commune ou se situe le sinistre)."
-     ]
-    ]
-   },
-   {
-    "title": "Point de transit",
-    "columns": [
-     "statut",
-     "identifiant"
-    ],
-    "rows": [
-     [
-      "Prévu ... Actif",
-      "1, 2, ..."
-     ]
-    ]
-   }
-  ],
-  "rules": [
-   "Le poste de commandement est représenté par un rectangle avec une encoche en haut à gauche, contenant la lettre P.",
-   "Le statut du poste de commandement est indiqué par un contour pointillé (prévu) ou un contour plein (actif).",
-   "Le type de poste de commandement est précisé par l'abréviation PC de colonne, PC 9 fonctions ou PC de site.",
-   "La désignation du poste de commandement inclut le trigramme de la commune où se situe le sinistre.",
-   "Le point de transit est représenté par un losange avec des flèches internes.",
-   "Le statut du point de transit est indiqué par un contour pointillé (prévu) ou un cercle rouge plein (actif).",
-   "L'identifiant du point de transit est un numéro (1, 2, ...)."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 18,
-  "title": "4.2 MOYENS D'INTERVENTION",
-  "sections": [
-   {
-    "heading": "",
-    "text": "La réalisation des actions de secours passe par la mise en œuvre de moyens d'intervention.\n3 catégories sont distinguées :"
-   },
-   {
-    "heading": "- Moyens d'intervention terrestres sapeurs-pompiers",
-    "text": ""
-   },
-   {
-    "heading": "- Moyens d'intervention terrestres non sapeurs-pompiers",
-    "text": ""
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "carré",
-    "color": "noir",
-    "style": "contour seul",
-    "meaning": "Véhicule seul prévu",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "cercle",
-    "color": "rouge",
-    "style": "trait plein",
-    "meaning": "Véhicule actif",
-    "text_inside": ""
-   },
-   {
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein",
-    "meaning": "Groupe actif",
-    "text_inside": "",
-    "label": ""
-   },
-   {
-    "shape": "polygone à six côtés",
-    "color": "rouge",
-    "style": "trait plein",
-    "meaning": "Colonne active",
-    "text_inside": "",
-    "label": ""
-   },
-   {
-    "shape": "polygone à huit côtés",
-    "color": "rouge",
-    "style": "trait plein rempli",
-    "meaning": "Niveau HLS (Haut niveau de soutien)",
-    "text_inside": "HLS",
-    "label": ""
-   },
-   {
-    "shape": "carré",
-    "color": "vert clair",
-    "style": "rempli",
-    "meaning": "Secours à personnes / sanitaire",
-    "text_inside": "",
-    "label": ""
-   },
-   {
-    "shape": "carré",
-    "color": "rouge clair",
-    "style": "rempli",
-    "meaning": "Incendie",
-    "text_inside": "",
-    "label": ""
-   },
-   {
-    "shape": "carré",
-    "color": "orange",
-    "style": "rempli",
-    "meaning": "Risques particuliers (CHIM, RAD...)",
-    "text_inside": "",
-    "label": ""
-   },
-   {
-    "shape": "carré",
-    "color": "bleu clair",
-    "style": "rempli",
-    "meaning": "Ayant trait à l'Eau",
-    "text_inside": "",
-    "label": ""
-   },
-   {
-    "shape": "rectangle",
-    "color": "vert",
-    "style": "trait plein",
-    "meaning": "Prévu",
-    "text_inside": "SANU 7j",
-    "label": ""
-   },
-   {
-    "shape": "rectangle",
-    "color": "jaune",
-    "style": "trait plein",
-    "meaning": "Actif",
-    "text_inside": "SANU 7j",
-    "label": ""
-   },
-   {
-    "shape": "triangle",
-    "color": "noir",
-    "style": "contour seul",
-    "meaning": "Trigramme de la commune d'origine (ex : Nanterre les Roches)",
-    "text_inside": "",
-    "label": "NRC HLS"
-   },
-   {
-    "shape": "ligne",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Lien de rattachement ou catégorie",
-    "text_inside": "",
-    "label": ""
-   }
-  ],
-  "tables": [
-   {
-    "title": "Moyens d'intervention terrestres sapeurs-pompiers",
-    "columns": [
-     "statut",
-     "catégorie",
-     "type"
-    ],
-    "rows": [
-     [
-      "Véhicule seul prévu",
-      "",
-      ""
-     ],
-     [
-      "Véhicule actif",
-      "",
-      ""
-     ],
-     [
-      "Groupe actif",
-      "",
-      "Trigramme de la commune d'origine (ex : Nanterre les Roches)"
-     ],
-     [
-      "Colonne active",
-      "",
-      "Identifiant agrès Isolés (VSAV, FPT...)"
-     ],
-     [
-      "",
-      "",
-      "Identifient moyens constitutifs (INC, SAP, LIF...)"
-     ]
-    ]
-   },
-   {
-    "title": "Moyens d'intervention terrestres non sapeurs-pompiers",
-    "columns": [
-     "statut",
-     "catégorie",
-     "origine / rattachement"
-    ],
-    "rows": [
-     [
-      "Prévu",
-      "",
-      ""
-     ],
-     [
-      "Actif",
-      "",
-      ""
-     ]
-    ]
-   }
-  ],
-  "rules": [
-   "Les moyens d'intervention sont classés en trois catégories distinctes : moyens terrestres sapeurs-pompiers, moyens terrestres non sapeurs-pompiers, et une troisième catégorie non détaillée sur cette page.",
-   "Un véhicule seul prévu est représenté par un carré noir à contour seul.",
-   "Un véhicule actif est représenté par un cercle rouge à trait plein.",
-   "Un groupe actif est représenté par un rectangle rouge à trait plein.",
-   "Une colonne active est représentée par un polygone à six côtés rouge à trait plein.",
-   "Le niveau HLS (Haut niveau de soutien) est représenté par un polygone à huit côtés rouge rempli avec l'abréviation 'HLS'.",
-   "Les carrés de couleur représentent les types d'intervention : vert clair pour secours à personnes/sanitaire, rouge clair pour incendie, orange pour risques particuliers (CHIM, RAD...), bleu clair pour ayant trait à l'eau.",
-   "Les moyens terrestres non sapeurs-pompiers prévus sont représentés par un rectangle vert avec l'abréviation 'SANU 7j'.",
-   "Les moyens terrestres non sapeurs-pompiers actifs sont représentés par un rectangle jaune avec l'abréviation 'SANU 7j'.",
-   "Le trigramme de la commune d'origine est indiqué dans un triangle noir à contour seul."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 19,
-  "title": "- Moyens d’intervention aériens / 4.3 RESSOURCES, INFRASTRUCTURES ET LOGISTIQUES OPERATIONNELLES",
-  "sections": [
-   {
-    "heading": "Moyens d’intervention aériens",
-    "text": "Les moyens d’intervention aériens sont représentés par un statut et une catégorie unique. L’ensemble des symboles permet de préciser le type d’aéronef et sa mission."
-   },
-   {
-    "heading": "4.3 RESSOURCES, INFRASTRUCTURES ET LOGISTIQUES OPERATIONNELLES",
-    "text": "Les ressources, infrastructures et logistiques opérationnelles regroupent sous une catégorie unique l’ensemble des ressources, infrastructures et logistiques-support sur lesquelles les sapeurs-pompiers peuvent s’appuyer. Elles sont définies par un type (champ texte) et par une catégorie."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "rectangle avec icône d'avion",
-    "color": "noir et blanc",
-    "style": "contour seul, icône remplie en noir",
-    "meaning": "Moyens d’intervention aériens",
-    "text_inside": ""
-   },
-   {
-    "label": "Prévu",
-    "shape": "pastille ronde",
-    "color": "vert",
-    "style": "trait plein, rempli",
-    "meaning": "Statut : Prévu",
-    "text_inside": ""
-   },
-   {
-    "label": "Actif",
-    "shape": "pastille ronde",
-    "color": "rouge",
-    "style": "trait plein, rempli",
-    "meaning": "Statut : Actif",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "carré barré en croix",
-    "color": "rouge",
-    "style": "trait plein, barré en croix",
-    "meaning": "Catégorie CL 415",
-    "text_inside": "CL 415"
-   },
-   {
-    "label": "Santaire / Sauvetage",
-    "shape": "pastille carrée",
-    "color": "vert clair",
-    "style": "trait plein, rempli",
-    "meaning": "Type de mission : Sanitaire / Sauvetage",
-    "text_inside": ""
-   },
-   {
-    "label": "Lutte contre l’incendie (ABE et HBE)",
-    "shape": "pastille carrée",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Type de mission : Lutte contre l’incendie (ABE et HBE)",
-    "text_inside": ""
-   },
-   {
-    "label": "Risques particuliers",
-    "shape": "pastille carrée",
-    "color": "gris",
-    "style": "trait plein, rempli",
-    "meaning": "Type de mission : Risques particuliers (CHIM, RAD...)",
-    "text_inside": ""
-   },
-   {
-    "label": "Lié à l’eau",
-    "shape": "pastille carrée",
-    "color": "bleu",
-    "style": "trait plein, rempli",
-    "meaning": "Type de mission : Lié à l’eau",
-    "text_inside": ""
-   },
-   {
-    "label": "Commandement / Observation",
-    "shape": "pastille carrée",
-    "color": "violet",
-    "style": "trait plein, rempli",
-    "meaning": "Type de mission : Commandement / Observation",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle avec icône d'hélicoptère",
-    "color": "noir et blanc",
-    "style": "contour seul, icône remplie en noir",
-    "meaning": "Ressources, infrastructures et logistiques opérationnelles",
-    "text_inside": ""
-   },
-   {
-    "label": "Prévu",
-    "shape": "pastille ronde",
-    "color": "vert",
-    "style": "trait plein, rempli",
-    "meaning": "Statut : Prévu",
-    "text_inside": ""
-   },
-   {
-    "label": "Actif",
-    "shape": "pastille ronde",
-    "color": "rouge",
-    "style": "trait plein, rempli",
-    "meaning": "Statut : Actif",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "cercle",
-    "color": "noir",
-    "style": "trait plein, rempli",
-    "meaning": "Catégorie CH (Centre de Hébergement)",
-    "text_inside": "CH"
-   },
-   {
-    "label": "Secours à personnes / sanitaire",
-    "shape": "pastille carrée",
-    "color": "vert clair",
-    "style": "trait plein, rempli",
-    "meaning": "Catégorie : Secours à personnes / sanitaire",
-    "text_inside": ""
-   },
-   {
-    "label": "Incendie",
-    "shape": "pastille carrée",
-    "color": "orange",
-    "style": "trait plein, rempli",
-    "meaning": "Catégorie : Incendie",
-    "text_inside": ""
-   },
-   {
-    "label": "Risques particuliers (CHIM, RAD...)",
-    "shape": "pastille carrée",
-    "color": "gris",
-    "style": "trait plein, rempli",
-    "meaning": "Catégorie : Risques particuliers",
-    "text_inside": ""
-   },
-   {
-    "label": "Avant trait à l’eau",
-    "shape": "pastille carrée",
-    "color": "bleu",
-    "style": "trait plein, rempli",
-    "meaning": "Catégorie : Ayant trait à l’eau",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "carré avec icône de bulldozer",
-    "color": "noir et blanc",
-    "style": "contour seul, icône remplie en noir",
-    "meaning": "Moyens du Génie",
-    "text_inside": ""
-   }
-  ],
-  "tables": [
-   {
-    "title": "Types de ressources, infrastructures et logistiques opérationnelles",
-    "columns": [
-     "statut",
-     "type",
-     "catégorie"
-    ],
-    "rows": [
-     [
-      "Prévu / Actif",
-      "P : Parking",
-      "Secours à personnes / sanitaire"
-     ],
-     [
-      "",
-      "H : Héliport",
-      "Incendie"
-     ],
-     [
-      "",
-      "PRV : Point de Regroupement des Victimes",
-      "Risques particuliers (CHIM, RAD...)"
-     ],
-     [
-      "",
-      "PMA : Poste Médical Avancé",
-      "Ayant trait à l’eau"
-     ],
-     [
-      "",
-      "CHR : Centre d’Hébergement Relais",
-      ""
-     ],
-     [
-      "",
-      "CIT : Centre d’Information et de Transit",
-      ""
-     ],
-     [
-      "",
-      "OR : Centre Opérationnel",
-      ""
-     ],
-     [
-      "",
-      "MED : Médecin",
-      ""
-     ],
-     [
-      "",
-      "PSY : Psychologue",
-      ""
-     ],
-     [
-      "",
-      "PHA : Pharmacien",
-      ""
-     ],
-     [
-      "",
-      "PN : Personnel Non médical",
-      ""
-     ],
-     [
-      "",
-      "CRA : Centre de Regroupement des Moyens",
-      ""
-     ],
-     [
-      "",
-      "REST : Unité de Restauration",
-      ""
-     ],
-     [
-      "",
-      "MEC : Maintenance des Équipements",
-      ""
-     ],
-     [
-      "",
-      "OIL : Ravitaillement Logistique",
-      ""
-     ],
-     [
-      "",
-      "ELEC : Électricité",
-      ""
-     ],
-     [
-      "",
-      "EMUL : Réserve émulseur",
-      ""
-     ]
-    ]
-   }
-  ],
-  "rules": [
-   "Les moyens d’intervention aériens sont définis par un statut (prévu ou actif), une catégorie (ex. CL 415) et un type de mission (sanitaire, incendie, risques particuliers, lié à l’eau, commandement/observation).",
-   "Les ressources, infrastructures et logistiques opérationnelles sont définies par un type (ex. Parking, Héliport, PMA) et une catégorie (secours à personnes, incendie, risques particuliers, ayant trait à l’eau).",
-   "Chaque ressource ou infrastructure possède un statut (prévu ou actif) et peut être représentée par un symbole spécifique."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 20,
-  "title": "V - L'ORGANISATION OPERATIONNELLE DE LA ZONE D'INTERVENTION",
-  "sections": [
-   {
-    "heading": "5.1 SECTORISATION GEOGRAPHIQUE",
-    "text": "La délimitation des secteurs géographiques est réalisée au moyen d’un polygone de couleur mauve surchargé en 1 point par une indication du niveau de commandement lié au dit secteur."
-   },
-   {
-    "heading": "5.2 SECTORISATION FONCTIONNELLE",
-    "text": "La sectorisation fonctionnelle est matérialisée par un figuré permettant d’afficher la catégorie du secteur et le niveau de commandement qui lui est associé."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "polygone",
-    "color": "mauve",
-    "style": "trait pointillé avec un point à l'intérieur",
-    "meaning": "Secteur 'Chef de Groupe'",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "polygone",
-    "color": "mauve",
-    "style": "trait pointillé avec deux points à l'intérieur",
-    "meaning": "Secteur 'Chef de Colonne'",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "polygone",
-    "color": "mauve",
-    "style": "trait pointillé avec trois points à l'intérieur",
-    "meaning": "Secteur 'Chef de Site'",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "losange",
-    "color": "noir",
-    "style": "trait plein rempli",
-    "meaning": "Secteurs à personnes/sanitaire",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "losange",
-    "color": "rose",
-    "style": "contour seul",
-    "meaning": "Incendie",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "losange",
-    "color": "vert",
-    "style": "trait plein rempli avec motif hachuré",
-    "meaning": "Risques particuliers (CHIM, RAD...)",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "triangle",
-    "color": "orange",
-    "style": "trait plein rempli",
-    "meaning": "Ayant trait à l'Eau",
-    "text_inside": ""
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "La sectorisation géographique est délimitée par un polygone mauve avec un nombre de points correspondant au niveau de commandement (1 point pour Chef de Groupe, 2 points pour Chef de Colonne, 3 points pour Chef de Site).",
-   "La sectorisation fonctionnelle utilise des figurés spécifiques pour indiquer la catégorie du secteur et le niveau de commandement associé."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 21,
-  "title": "VI - DONNÉES CONTEXTUELLES",
-  "sections": [
-   {
-    "heading": "6.1 DONNÉES CONTEXTUELLES",
-    "text": "Elles relèvent pour partie de l'habillage de la carte."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Orientation",
-    "text_inside": "N"
-   },
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Vent - Direction / Force",
-    "text_inside": "90 Km/h"
-   },
-   {
-    "shape": "ligne horizontale avec crochets",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "À partir de 15h00",
-    "text_inside": "1500"
-   },
-   {
-    "shape": "ligne horizontale avec crochets",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Jusqu'à 15h00",
-    "text_inside": "1500"
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Les données contextuelles incluent l'orientation, la direction et la force du vent, ainsi que les plages horaires indiquées sur la carte pour partie de l'habillage."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 22,
-  "title": "CARTOGRAPHIE OPERATIONNELLE - exemple feu urbain",
-  "sections": [
-   {
-    "heading": "",
-    "text": "Exemple de cartographie opérationnelle appliquée à un feu urbain. Schéma illustrant les secteurs, points d'intérêt, et symboles utilisés pour la gestion opérationnelle et commandement (GOC). Les éléments graphiques représentent les zones d'intervention, les risques identifiés, et les moyens engagés."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "cercle",
-    "color": "bleu",
-    "style": "trait plein rempli",
-    "meaning": "ASP (Aire de Stationnement des Pompiers)",
-    "text_inside": "ASP"
-   },
-   {
-    "label": "",
-    "shape": "rectangle horizontal",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Bâtiment en feu ou concerné par l'intervention (ex. : MAGASIN, R+2 HABITATION)",
-    "text_inside": ""
-   },
-   {
-    "label": "ENC. EN FEU",
-    "shape": "rectangle",
-    "color": "noir",
-    "style": "trait plein, texte en majuscules",
-    "meaning": "Zone en feu ou en cours d'engagement des secours",
-    "text_inside": "ENC. EN FEU"
-   },
-   {
-    "label": "PI",
-    "shape": "cercle",
-    "color": "bleu",
-    "style": "trait plein rempli",
-    "meaning": "Point d'Impact (PI) : lieu précis d'intervention ou d'engagement des moyens",
-    "text_inside": "PI"
-   },
-   {
-    "label": "PRV",
-    "shape": "rectangle vertical",
-    "color": "rouge",
-    "style": "trait plein, contour rouge",
-    "meaning": "Point de Regroupement des Victimes (PRV)",
-    "text_inside": "PRV"
-   },
-   {
-    "label": "Secteur Magasin CDG BRAVO",
-    "shape": "zone délimitée en pointillés",
-    "color": "rouge",
-    "style": "pointillés",
-    "meaning": "Secteur opérationnel défini pour l'intervention (ex. : secteur Magasin CDG BRAVO)",
-    "text_inside": ""
-   },
-   {
-    "label": "Secteur Réserve CDG ALPHA",
-    "shape": "zone délimitée en pointillés",
-    "color": "violet",
-    "style": "pointillés",
-    "meaning": "Secteur de réserve ou d'attente des moyens (ex. : secteur Réserve CDG ALPHA)",
-    "text_inside": ""
-   },
-   {
-    "label": "Secteur Magasin CDG CHARLIE",
-    "shape": "zone délimitée en pointillés",
-    "color": "noir",
-    "style": "pointillés",
-    "meaning": "Secteur opérationnel défini pour l'intervention (ex. : secteur Magasin CDG CHARLIE)",
-    "text_inside": ""
-   },
-   {
-    "label": "NUR",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "trait plein, contour noir",
-    "meaning": "Nid d'Urgence Radiologique (NUR) : illisible sur l'image, hypothèse basée sur l'abréviation courante",
-    "text_inside": "NUR"
-   },
-   {
-    "label": "COS CDC TANGO",
-    "shape": "rectangle",
-    "color": "blanc",
-    "style": "trait plein, contour noir",
-    "meaning": "Commandement des Opérations de Secours - Centre de Direction (COS) du CDC Tango",
-    "text_inside": "COS CDC TANGO"
-   },
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "rouge",
-    "style": "trait plein, rempli",
-    "meaning": "Direction de propagation du feu ou sens d'intervention",
-    "text_inside": ""
-   },
-   {
-    "label": "JAL. NON MAITR.",
-    "shape": "rectangle",
-    "color": "bleu clair",
-    "style": "trait pointillé, contour bleu",
-    "meaning": "Jalonnement non maîtrisé (zone non sécurisée ou non contrôlée)",
-    "text_inside": "JAL. NON MAITR."
-   },
-   {
-    "label": "",
-    "shape": "étoile ou zone hachurée",
-    "color": "rouge",
-    "style": "hachuré, rempli",
-    "meaning": "Foyer principal du feu ou risque majeur identifié",
-    "text_inside": ""
-   },
-   {
-    "label": "R+2 HABITATION",
-    "shape": "rectangle",
-    "color": "noir",
-    "style": "trait pointillé, contour rouge",
-    "meaning": "Bâtiment de type R+2 (habitation sur 2 niveaux)",
-    "text_inside": "R+2 HABITATION"
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "La cartographie opérationnelle doit représenter fidèlement les secteurs d'intervention, les points d'impact (PI), et les zones à risque.",
-   "Les symboles normalisés (ex. : PI, PRV, ASP) doivent être utilisés conformément au mémento GOC pour assurer une compréhension immédiate par tous les intervenants.",
-   "Les secteurs doivent être clairement délimités et identifiés par des codes alphanumériques (ex. : CDG BRAVO, CDG ALPHA).",
-   "Les flèches rouges indiquent la direction de propagation du feu ou le sens d'engagement des moyens.",
-   "Les zones hachurées en rouge signalent un risque majeur ou un foyer principal nécessitant une attention prioritaire."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 23,
-  "title": "CARTOGRAPHIE OPERATIONNELLE - exemple feu de forêt",
-  "sections": [
-   {
-    "heading": "Expression Graphique",
-    "text": "Exemple de représentation graphique utilisée en cartographie opérationnelle pour un feu de forêt. Les symboles et abréviations sont conformes aux standards des sapeurs-pompiers (ENSOSP - Mémento GOC)."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "rectangle",
-    "color": "jaune",
-    "style": "contour seul, rempli en jaune clair",
-    "meaning": "Périmètre de sécurité ou zone d'exclusion (1000 m)",
-    "text_inside": "1000m"
-   },
-   {
-    "label": "COVELAU",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein, contour rouge",
-    "meaning": "Point de rassemblement ou lieu-dit (identifié comme point de référence)",
-    "text_inside": ""
-   },
-   {
-    "label": "PI 84",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein, contour rouge",
-    "meaning": "Point d’Incendie n°84 (identification d'un point chaud ou d'intervention)",
-    "text_inside": "84"
-   },
-   {
-    "label": "PI 115",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein, contour rouge",
-    "meaning": "Point d’Incendie n°115",
-    "text_inside": "115"
-   },
-   {
-    "label": "PC",
-    "shape": "cercle",
-    "color": "noir",
-    "style": "trait plein, rempli en noir",
-    "meaning": "Poste de Commandement (PC opérationnel)",
-    "text_inside": ""
-   },
-   {
-    "label": "ROG",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein, contour rouge",
-    "meaning": "Point de regroupement des moyens (ROG)",
-    "text_inside": "ROG"
-   },
-   {
-    "label": "D 13",
-    "shape": "triangle",
-    "color": "violet",
-    "style": "trait plein, contour violet",
-    "meaning": "Direction ou axe d'intervention (route départementale D13)",
-    "text_inside": ""
-   },
-   {
-    "label": "Cl. 115",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein, contour rouge",
-    "meaning": "Colonne d'intervention n°115 (identification d'une colonne de véhicules ou équipe)",
-    "text_inside": "Cl. 115"
-   },
-   {
-    "label": "YEL",
-    "shape": "étoile",
-    "color": "jaune",
-    "style": "trait plein, rempli en jaune",
-    "meaning": "Point de surveillance ou d'observation (YEL)",
-    "text_inside": "YEL"
-   },
-   {
-    "label": "ASP",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein, contour rouge",
-    "meaning": "Aspirant ou point d'aspiration d'eau (ASP)",
-    "text_inside": "ASP"
-   },
-   {
-    "label": "CIT",
-    "shape": "cercle",
-    "color": "noir et blanc",
-    "style": "trait plein, contour noir et rempli en blanc",
-    "meaning": "Citerne ou point d'eau identifié (CIT)",
-    "text_inside": ""
-   },
-   {
-    "label": "PRV",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein, contour rouge",
-    "meaning": "Point de ravitaillement en vivres (PRV)",
-    "text_inside": "PRV"
-   },
-   {
-    "label": "LX I",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein, contour rouge",
-    "meaning": "Ligne d'intervention prioritaire (LX I)",
-    "text_inside": "LX I"
-   },
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "rouge",
-    "style": "trait plein, flèche rouge épaisse",
-    "meaning": "Sens de progression du feu ou des opérations",
-    "text_inside": ""
-   },
-   {
-    "label": "Tracé rouge sinueux",
-    "shape": "ligne",
-    "color": "rouge",
-    "style": "trait plein, sinueux",
-    "meaning": "Front de feu actif ou périmètre du feu",
-    "text_inside": ""
-   },
-   {
-    "label": "Zone hachurée rouge",
-    "shape": "polygone",
-    "color": "rouge",
-    "style": "hachuré en rouge",
-    "meaning": "Zone brûlée ou sinistrée",
-    "text_inside": ""
-   },
-   {
-    "label": "Cercle rouge pointillé",
-    "shape": "cercle",
-    "color": "rouge",
-    "style": "pointillé",
-    "meaning": "Zone à risque ou sous surveillance renforcée",
-    "text_inside": ""
-   },
-   {
-    "label": "VL",
-    "shape": "rectangle",
-    "color": "rouge",
-    "style": "trait plein, contour rouge",
-    "meaning": "Véhicule léger (VL) ou point de stationnement",
-    "text_inside": "VL"
-   },
-   {
-    "label": "Gendarmerie",
-    "shape": "rectangle",
-    "color": "noir",
-    "style": "trait plein, contour noir",
-    "meaning": "Point de contrôle ou présence gendarmerie",
-    "text_inside": ""
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Les symboles utilisés en cartographie opérationnelle doivent respecter les standards graphiques définis par le Mémento GOC (ENSOSP).",
-   "Chaque point d'intervention (PI) ou colonne (Cl.) doit être identifié par un numéro unique pour éviter toute confusion.",
-   "Le périmètre de sécurité (1000 m) doit être clairement délimité et visible sur la carte opérationnelle.",
-   "Les flèches rouges indiquent obligatoirement le sens de progression du feu ou des moyens engagés.",
-   "Les zones brûlées ou sinistrées sont représentées par des hachures rouges pour une identification immédiate.",
-   "Le Poste de Commandement (PC) doit être positionné en dehors de la zone à risque et clairement identifiable."
-  ],
-  "model": "mistral/mistral-large-latest"
- },
- {
-  "page": 24,
-  "title": "Mémento gestion opérationnelle et commandement, outils graphiques",
-  "sections": [
-   {
-    "heading": "",
-    "text": "Ce mémento présente une méthode et des outils.\nIl appartient à chacun de se les approprier afin d’être, individuellement et collectivement, le plus efficient possible durant une intervention.\n\nIl ne faut pas oublier que l’objectif du COS (commandant des opérations de secours) est de réussir au mieux les opérations en toute sécurité."
-   },
-   {
-    "heading": "Chef de groupe",
-    "text": "Responsable de l’engagement de son groupe de sapeurs-pompiers sur intervention."
-   },
-   {
-    "heading": "Chef de colonne",
-    "text": "Responsable de l’engagement de plusieurs groupes de sapeurs-pompiers sur intervention."
-   },
-   {
-    "heading": "Chef de site",
-    "text": "Maîtrise l’organisation et la gestion d’un site opérationnel."
-   }
-  ],
-  "symbols": [
-   {
-    "label": "",
-    "shape": "triangle",
-    "color": "rouge",
-    "style": "contour seul, trait plein",
-    "meaning": "Chef de groupe",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "rectangle horizontal",
-    "color": "bleu",
-    "style": "contour seul, trait plein",
-    "meaning": "Chef de colonne",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "carré",
-    "color": "noir",
-    "style": "contour seul, trait plein",
-    "meaning": "Chef de site",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "logo ENSOSP",
-    "color": "gris et violet",
-    "style": "trait plein, rempli",
-    "meaning": "Illisible",
-    "text_inside": ""
-   },
-   {
-    "label": "",
-    "shape": "flèche",
-    "color": "noir",
-    "style": "trait plein",
-    "meaning": "Illisible (probablement progression ou direction)",
-    "text_inside": ""
-   }
-  ],
-  "tables": [],
-  "rules": [
-   "Le COS doit assurer la réussite des opérations de secours en toute sécurité.",
-   "Chaque acteur (chef de groupe, chef de colonne, chef de site) doit s’approprier les outils et méthodes pour optimiser l’efficacité collective durant une intervention."
-  ],
-  "model": "mistral/mistral-large-latest"
- }
-]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "title": "Mémento GOC — page 1",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "Mémento gestion opérationnelle et commandement\nOutils graphiques"
+        }
+      ],
+      "symbols": [],
+      "tables": [],
+      "rules": [
+        "Couverture avec titre et logos. Aucun tableau de conventions ni symbole opérationnel défini sur cette page."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 2,
+      "title": "Mémento GOC — page 2",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Exemple moyen incendie FPT NLR",
+          "shape": "rectangle",
+          "color": "rouge",
+          "style": "contour continu",
+          "meaning": "Illustration de simplification graphique d'un véhicule de secours",
+          "text_inside": "FPT NLR"
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Illustration : un véhicule de secours est schématisé par un rectangle rouge portant FPT NLR.",
+        "La doctrine nationale diffusée par l'ENSOSP constitue la référence pour schématiser graphiquement et dynamiquement les principales informations opérationnelles relatives au sinistre.",
+        "Les outils graphiques visent à sécuriser et optimiser le recueil, la transmission et la compréhension de l'information opérationnelle.",
+        "L'objectif est l'émergence d'un référentiel commun de représentation graphique."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 3,
+      "title": "Mémento GOC — page 3",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Moyens et/ou infrastructures de secours",
+          "shape": "carré ou rectangle",
+          "color": "bleu clair",
+          "style": "plein/contour illustratif",
+          "meaning": "Forme élémentaire pour moyens et/ou infrastructures de secours",
+          "text_inside": ""
+        },
+        {
+          "label": "Avertissement / Danger / Actions SP",
+          "shape": "triangle orienté vers le haut",
+          "color": "bleu clair",
+          "style": "plein/contour illustratif",
+          "meaning": "Forme élémentaire pour avertissement, danger ou actions sapeurs-pompiers",
+          "text_inside": ""
+        },
+        {
+          "label": "Uniformité / Continuum spatial",
+          "shape": "surface irrégulière",
+          "color": "bleu clair",
+          "style": "surface",
+          "meaning": "Forme élémentaire pour uniformité ou continuum spatial",
+          "text_inside": ""
+        },
+        {
+          "label": "Ressource en eau",
+          "shape": "cercle/ellipse",
+          "color": "bleu clair",
+          "style": "plein/contour illustratif",
+          "meaning": "Forme élémentaire pour ressource en eau",
+          "text_inside": ""
+        },
+        {
+          "label": "Sinistre ou composante particulière du sinistre",
+          "shape": "étoile",
+          "color": "bleu clair",
+          "style": "plein/contour illustratif",
+          "meaning": "Forme élémentaire pour sinistre ou composante particulière du sinistre",
+          "text_inside": ""
+        },
+        {
+          "label": "Mouvement / Linéarité",
+          "shape": "ligne",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Forme élémentaire pour mouvement ou linéarité",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Carré ou rectangle : moyens et/ou infrastructures de secours.",
+        "Triangle orienté vers le haut : avertissement/danger ou actions SP.",
+        "Surface irrégulière : uniformité, continuum spatial.",
+        "Cercle : ressource en eau.",
+        "Étoile : sinistre ou composante particulière du sinistre.",
+        "Ligne : mouvement/linéarité.",
+        "Un objet graphique est défini par sa position dans le plan et par une identité graphique.",
+        "Le mode d'implantation peut être ponctuel, linéaire ou surfacique.",
+        "L'identité graphique est matérialisée par quatre variables visuelles : forme, valeur/état, couleur et surcharge."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 4,
+      "title": "Mémento GOC — page 4",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Couleur par défaut / voie d'accès",
+          "shape": "variable de couleur",
+          "color": "noir",
+          "style": "plein",
+          "meaning": "Couleur par défaut et voie d'accès",
+          "text_inside": ""
+        },
+        {
+          "label": "Personnes",
+          "shape": "variable de couleur",
+          "color": "vert",
+          "style": "plein",
+          "meaning": "Ayant trait aux personnes",
+          "text_inside": ""
+        },
+        {
+          "label": "Incendie",
+          "shape": "variable de couleur",
+          "color": "rouge",
+          "style": "plein",
+          "meaning": "Ayant trait à l'incendie",
+          "text_inside": ""
+        },
+        {
+          "label": "Eau",
+          "shape": "variable de couleur",
+          "color": "bleu",
+          "style": "plein",
+          "meaning": "Ayant trait à l'eau",
+          "text_inside": ""
+        },
+        {
+          "label": "Risques particuliers",
+          "shape": "variable de couleur",
+          "color": "orange",
+          "style": "plein",
+          "meaning": "Ayant trait aux risques particuliers",
+          "text_inside": ""
+        },
+        {
+          "label": "Commandement",
+          "shape": "variable de couleur",
+          "color": "mauve",
+          "style": "plein",
+          "meaning": "Ayant trait au commandement",
+          "text_inside": ""
+        },
+        {
+          "label": "État prévu",
+          "shape": "flèche",
+          "color": "noir",
+          "style": "pointillé",
+          "meaning": "Objet/action prévu",
+          "text_inside": ""
+        },
+        {
+          "label": "État en cours",
+          "shape": "flèche",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Objet/action en cours",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Noir : couleur par défaut et voie d’accès.",
+        "Vert : ayant trait aux personnes.",
+        "Rouge : ayant trait à l’incendie.",
+        "Bleu : ayant trait à l’eau.",
+        "Orange : ayant trait aux risques particuliers.",
+        "Mauve : ayant trait au commandement.",
+        "Sur les flèches illustrées : prévu en pointillés ; en cours en trait continu."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 5,
+      "title": "Mémento GOC — page 5",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Surcharge textuelle",
+          "shape": "texte associé à un symbole",
+          "color": "variable",
+          "style": "texte",
+          "meaning": "Abréviation, sigle, groupe horaire ou autre renforcement textuel",
+          "text_inside": ""
+        },
+        {
+          "label": "Surcharge graphique",
+          "shape": "marque graphique ajoutée au symbole",
+          "color": "variable",
+          "style": "graphique",
+          "meaning": "Renforcement graphique codifié de la figure",
+          "text_inside": ""
+        },
+        {
+          "label": "Niveau 1 de complexité",
+          "shape": "forme + orientation",
+          "color": "variable",
+          "style": "combinaison",
+          "meaning": "Premier niveau illustré : forme et orientation",
+          "text_inside": ""
+        },
+        {
+          "label": "Niveau 2 de complexité",
+          "shape": "forme + orientation + couleur",
+          "color": "variable",
+          "style": "combinaison",
+          "meaning": "Deuxième niveau illustré : forme, orientation et couleur",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "La surcharge peut être textuelle (abréviation, sigle, groupe horaire) ou graphique.",
+        "Les variables combinées sont forme, valeur, couleur et surcharge.",
+        "Le premier niveau illustré associe forme et orientation ; le deuxième ajoute la couleur.",
+        "La nature de l'opération, le profil de l'utilisateur et les moyens matériels déterminent les niveaux d'exigence en matière d'outils graphiques.",
+        "Une charte simplifiée peut être mise en œuvre ; une charte plus complexe mobilise un nombre croissant de variables visuelles."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 6,
+      "title": "Mémento GOC — page 6",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [],
+      "tables": [],
+      "rules": [
+        "Les six plans superposés sont : analyse de la zone, localisation du sinistre, actions, moyens, sectorisation opérationnelle, données contextuelles.",
+        "La cartographie opérationnelle est une superposition de plans thématiques liés par la nature des informations.",
+        "Plan 1 : analyse et schématisation de la zone d'intervention.",
+        "Plan 2 : localisation du sinistre (centres et zones d'action)."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 7,
+      "title": "Mémento GOC — page 7",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [],
+      "tables": [],
+      "rules": [
+        "Page de définitions textuelles des plans actions, moyens, organisation et données contextuelles ; pas de catalogue de symboles.",
+        "Chaque centre ou zone d'action est obligatoirement rattaché à un secteur, fonctionnel ou géographique.",
+        "Chaque action est obligatoirement associée à un centre ou à une zone d'action ; une action ne peut être rattachée qu'à un centre ou une zone d'action.",
+        "Inversement, un centre ou une zone d'action peut concerner plusieurs actions.",
+        "Les moyens d'intervention engagés ou à engager sont obligatoirement rattachés à une action définie préalablement.",
+        "Un moyen peut être rattaché à plusieurs actions et une action peut concerner plusieurs moyens.",
+        "Les moyens aériens, de commandement/coordination et les ressources/infrastructures/logistiques ne font pas l'objet d'un rattachement à une action.",
+        "L'organisation opérationnelle de la zone d'intervention décrit l'implantation des moyens de commandement et de coordination ainsi que la définition des secteurs d'activité et de commandement.",
+        "Les données contextuelles sont des paramètres météorologiques et astronomiques ainsi que des paramètres d'habillage de la carte."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 8,
+      "title": "Mémento GOC — page 8",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Accès",
+          "shape": "ligne avec trois points pleins",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Cheminement d'accès",
+          "text_inside": ""
+        },
+        {
+          "label": "Rocade",
+          "shape": "deux lignes parallèles",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Cheminement de rocade",
+          "text_inside": ""
+        },
+        {
+          "label": "Pénétrante",
+          "shape": "flèche droite",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Cheminement pénétrant",
+          "text_inside": ""
+        },
+        {
+          "label": "Évolution limitée",
+          "shape": "ligne horizontale",
+          "color": "noir",
+          "style": "trait pointillé sous-jacent",
+          "meaning": "Cheminement à évolution limitée",
+          "text_inside": ""
+        },
+        {
+          "label": "Sens de circulation",
+          "shape": "flèche intégrée à une ligne",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Sens de circulation",
+          "text_inside": ""
+        },
+        {
+          "label": "Circulation impossible",
+          "shape": "ligne barrée par une croix",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Circulation impossible",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Cheminements en noir : accès = ligne avec points pleins ; rocade = deux lignes parallèles ; pénétrante = ligne fléchée.",
+        "Circulation impossible : ligne barrée par une croix ; sens de circulation : flèche parallèle à la voie."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 9,
+      "title": "Mémento GOC — page 9",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Prise d'eau pérenne",
+          "shape": "cercle/disque",
+          "color": "bleu",
+          "style": "plein",
+          "meaning": "Prise d'eau pérenne (PI, BI, ASP)",
+          "text_inside": ""
+        },
+        {
+          "label": "Prise d'eau non pérenne",
+          "shape": "cercle",
+          "color": "bleu et blanc",
+          "style": "moitié bleue / moitié blanche",
+          "meaning": "Prise d'eau non pérenne (PI, BI, ASP, CIT)",
+          "text_inside": ""
+        },
+        {
+          "label": "Point de ravitaillement ABE/HBE",
+          "shape": "cercle avec deux triangles opposés",
+          "color": "bleu et blanc",
+          "style": "plein",
+          "meaning": "Point de ravitaillement pour ABE et HBE",
+          "text_inside": ""
+        },
+        {
+          "label": "Point coté",
+          "shape": "texte numérique avec point",
+          "color": "noir",
+          "style": "annotation",
+          "meaning": "Élévation en mètres",
+          "text_inside": "141"
+        },
+        {
+          "label": "Niveau",
+          "shape": "texte R+n / R-n",
+          "color": "noir",
+          "style": "annotation",
+          "meaning": "Élévation en nombre de niveaux par rapport au niveau 0",
+          "text_inside": "R+2"
+        },
+        {
+          "label": "Déclivité",
+          "shape": "flèche oblique vers le bas de pente",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Direction de la pente ; la flèche vise le bas de la pente",
+          "text_inside": ""
+        },
+        {
+          "label": "Intensité de pente faible",
+          "shape": "marque transversale",
+          "color": "noir",
+          "style": "1 trait",
+          "meaning": "Pente faible",
+          "text_inside": ""
+        },
+        {
+          "label": "Intensité de pente modérée",
+          "shape": "marques transversales",
+          "color": "noir",
+          "style": "2 traits",
+          "meaning": "Pente modérée",
+          "text_inside": ""
+        },
+        {
+          "label": "Intensité de pente forte",
+          "shape": "marques transversales",
+          "color": "noir",
+          "style": "3 traits",
+          "meaning": "Pente forte",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Prise d’eau pérenne : disque bleu plein ; non pérenne : disque bleu dont la moitié supérieure est blanche.",
+        "Point de ravitaillement pour ABE et HBE : cercle bleu avec deux triangles blancs opposés.",
+        "La flèche de déclivité vise le bas de la pente ; les marques transversales distinguent faible, modérée et forte.",
+        "Les prises d'eau sont des points d'alimentation en eau pour les moyens de secours terrestres ou aériens.",
+        "L'élévation est indiquée en mètres ou en nombre de niveaux par rapport au sol.",
+        "La déclivité est caractérisée par sa direction et son intensité."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 10,
+      "title": "Mémento GOC — page 10",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Source de danger — Composante humaine",
+          "shape": "triangle orienté vers le haut",
+          "color": "vert",
+          "style": "plein",
+          "meaning": "Source de danger : Composante humaine",
+          "text_inside": ""
+        },
+        {
+          "label": "Source de danger — Composante incendie",
+          "shape": "triangle orienté vers le haut",
+          "color": "rouge",
+          "style": "plein",
+          "meaning": "Source de danger : Composante incendie",
+          "text_inside": ""
+        },
+        {
+          "label": "Source de danger — Composante risques particuliers",
+          "shape": "triangle orienté vers le haut",
+          "color": "orange",
+          "style": "plein",
+          "meaning": "Source de danger : Composante risques particuliers",
+          "text_inside": ""
+        },
+        {
+          "label": "Source de danger — Composante eau",
+          "shape": "triangle orienté vers le haut",
+          "color": "bleu",
+          "style": "plein",
+          "meaning": "Source de danger : Composante eau",
+          "text_inside": ""
+        },
+        {
+          "label": "Point sensible — Composante humaine",
+          "shape": "triangle orienté vers le bas",
+          "color": "vert",
+          "style": "plein",
+          "meaning": "Point sensible : Composante humaine",
+          "text_inside": ""
+        },
+        {
+          "label": "Point sensible — Composante incendie",
+          "shape": "triangle orienté vers le bas",
+          "color": "rouge",
+          "style": "plein",
+          "meaning": "Point sensible : Composante incendie",
+          "text_inside": ""
+        },
+        {
+          "label": "Point sensible — Composante risques particuliers",
+          "shape": "triangle orienté vers le bas",
+          "color": "orange",
+          "style": "plein",
+          "meaning": "Point sensible : Composante risques particuliers",
+          "text_inside": ""
+        },
+        {
+          "label": "Point sensible — Composante eau",
+          "shape": "triangle orienté vers le bas",
+          "color": "bleu",
+          "style": "plein",
+          "meaning": "Point sensible : Composante eau",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Sources de danger : triangles orientés vers le haut. Points sensibles : triangles orientés vers le bas.",
+        "Pour les deux familles : composante humaine verte ; incendie rouge ; risques particuliers orange ; eau bleue.",
+        "Les triangles de catégorie illustrés sont pleins. Le symbole générique est un contour triangulaire noir à intérieur blanc, sans lettre delta.",
+        "Types listés : N nucléaire, R radiologique, B biologique, C chimique, E électrique. Dans l’exemple orange, R est placé sous le triangle ; les lettres ne sont pas montrées à l’intérieur.",
+        "La composante humaine ne signifie pas automatiquement risque chimique ; distinguer catégorie et type."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 11,
+      "title": "Mémento GOC — page 11",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Centre d'action",
+          "shape": "étoile ou rectangle croisé",
+          "color": "variable selon catégorie",
+          "style": "ponctuel",
+          "meaning": "Centre d'action matérialisant ponctuellement le sinistre",
+          "text_inside": ""
+        },
+        {
+          "label": "Zone d'action",
+          "shape": "contour fermé irrégulier en pointes",
+          "color": "variable selon catégorie",
+          "style": "surfacique",
+          "meaning": "Zone d'action matérialisant surfaciquement le sinistre",
+          "text_inside": ""
+        },
+        {
+          "label": "Centre/zone — composante humaine",
+          "shape": "centre ou zone d'action",
+          "color": "vert",
+          "style": "catégorie",
+          "meaning": "Composante humaine",
+          "text_inside": ""
+        },
+        {
+          "label": "Centre/zone — composante incendie",
+          "shape": "centre ou zone d'action",
+          "color": "rouge",
+          "style": "catégorie",
+          "meaning": "Composante incendie",
+          "text_inside": ""
+        },
+        {
+          "label": "Centre/zone — risques particuliers",
+          "shape": "centre ou zone d'action",
+          "color": "orange",
+          "style": "catégorie",
+          "meaning": "Composante risques particuliers",
+          "text_inside": ""
+        },
+        {
+          "label": "Centre/zone — eau",
+          "shape": "centre ou zone d'action",
+          "color": "bleu",
+          "style": "catégorie",
+          "meaning": "Composante ayant trait à l'eau",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Centre d’action : étoile ou repère rectangulaire croisé ; zone d’action : contour fermé irrégulier en pointes.",
+        "Catégories : humain vert, incendie rouge, risques particuliers orange, eau bleue.",
+        "L’exemple associe un contour rouge en pointes à Lycée et aux caractéristiques 7 victimes / 7 btles. de gaz.",
+        "Le sinistre correspond à la ou aux portions d'espace de la zone d'intervention affectées par la manifestation du risque.",
+        "Un centre ou une zone d'action naît, vit et meurt au fil des actions et du désengagement des moyens.",
+        "Des informations textuelles de type identifiant ou caractéristiques peuvent être associées aux figures graphiques."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 12,
+      "title": "Mémento GOC — page 12",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Axe principal de propagation",
+          "shape": "grande flèche",
+          "color": "rouge",
+          "style": "pleine",
+          "meaning": "Axe principal de propagation du sinistre, lié au sens du vent",
+          "text_inside": ""
+        },
+        {
+          "label": "Axe secondaire de propagation",
+          "shape": "grande flèche",
+          "color": "rouge",
+          "style": "contour avec intérieur blanc",
+          "meaning": "Axe secondaire de propagation du sinistre, lié au relief",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Axe principal de propagation du sinistre : flèche rouge pleine, liée au sens du vent.",
+        "Axe secondaire : flèche rouge à intérieur blanc, liée au relief.",
+        "La représentation du développement du sinistre est surtout utilisée pour les feux de forêt.",
+        "Elle évolue en fonction du sens du vent et du relief."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 13,
+      "title": "Mémento GOC — page 13",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Reconnaissance prévue",
+          "shape": "flèche avec portion en créneau",
+          "color": "variable selon catégorie",
+          "style": "pointillé",
+          "meaning": "Reconnaissance planifiée",
+          "text_inside": ""
+        },
+        {
+          "label": "Reconnaissance en cours",
+          "shape": "flèche avec portion en créneau",
+          "color": "variable selon catégorie",
+          "style": "trait continu",
+          "meaning": "Reconnaissance en cours",
+          "text_inside": ""
+        },
+        {
+          "label": "Action — secours à personne",
+          "shape": "symbole d'action",
+          "color": "vert",
+          "style": "catégorie",
+          "meaning": "Action liée au secours à personne",
+          "text_inside": ""
+        },
+        {
+          "label": "Action — extinction/incendie",
+          "shape": "symbole d'action",
+          "color": "rouge",
+          "style": "catégorie",
+          "meaning": "Action liée à l'extinction/incendie",
+          "text_inside": ""
+        },
+        {
+          "label": "Action — risques particuliers",
+          "shape": "symbole d'action",
+          "color": "orange",
+          "style": "catégorie",
+          "meaning": "Action liée aux risques particuliers",
+          "text_inside": ""
+        },
+        {
+          "label": "Action — eau",
+          "shape": "symbole d'action",
+          "color": "bleu",
+          "style": "catégorie",
+          "meaning": "Action liée à l'eau",
+          "text_inside": ""
+        },
+        {
+          "label": "Position de l'action",
+          "shape": "repère spatial",
+          "color": "variable",
+          "style": "annotation",
+          "meaning": "Position par rapport au centre/à la zone d'action",
+          "text_inside": "R+1"
+        },
+        {
+          "label": "Planification",
+          "shape": "groupe horaire",
+          "color": "variable",
+          "style": "annotation",
+          "meaning": "Planification temporelle de l'action",
+          "text_inside": "1500"
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Reconnaissance : flèche avec une portion en créneau ; prévue en pointillés, en cours en trait continu.",
+        "Catégories des actions : secours à personne vert, extinction/incendie rouge, risques particuliers orange, eau bleu.",
+        "La cartographie des actions s'appuie sur trois types : reconnaissance, actions offensives et actions défensives.",
+        "Une reconnaissance peut être globale ou orientée thématiquement, positionnée dans l'espace et planifiée dans le temps."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 14,
+      "title": "Mémento GOC — page 14",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Action offensive prévue",
+          "shape": "flèche droite",
+          "color": "variable selon catégorie",
+          "style": "pointillé",
+          "meaning": "Action offensive prévue",
+          "text_inside": ""
+        },
+        {
+          "label": "Action offensive en cours",
+          "shape": "flèche droite",
+          "color": "variable selon catégorie",
+          "style": "trait continu",
+          "meaning": "Action offensive en cours",
+          "text_inside": ""
+        },
+        {
+          "label": "Actions localisées et indépendantes",
+          "shape": "plusieurs flèches séparées",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Actions localisées et indépendantes",
+          "text_inside": ""
+        },
+        {
+          "label": "Actions simultanées et concertées",
+          "shape": "plusieurs flèches regroupées",
+          "color": "noir",
+          "style": "prévu pointillé / en cours continu",
+          "meaning": "Actions simultanées et concertées, dites allongement",
+          "text_inside": ""
+        },
+        {
+          "label": "Actions déclinées en aller-retour",
+          "shape": "flèche en boucle aller-retour",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Actions déclinées en aller-retour",
+          "text_inside": ""
+        }
+      ],
+      "tables": [
+        {
+          "title": "Types / sigles d'actions offensives visibles",
+          "entries": [
+            {
+              "code": "MED",
+              "meaning": "médicalisation"
+            },
+            {
+              "code": "EVAC",
+              "meaning": "évacuation"
+            },
+            {
+              "code": "SR",
+              "meaning": "désincarcération"
+            },
+            {
+              "code": "RECH",
+              "meaning": "recherche de personne(s)"
+            },
+            {
+              "code": "SD",
+              "meaning": "sauvetage/déblaiement"
+            },
+            {
+              "code": "EMUL",
+              "meaning": "attaque mousse"
+            },
+            {
+              "code": "VENT",
+              "meaning": "ventilation"
+            },
+            {
+              "code": "REC",
+              "meaning": "récupération"
+            },
+            {
+              "code": "TRAIT",
+              "meaning": "traitement pollution"
+            },
+            {
+              "code": "MES",
+              "meaning": "mesures"
+            },
+            {
+              "code": "OBST",
+              "meaning": "obstruction écoulement"
+            },
+            {
+              "code": "EPUS",
+              "meaning": "épuisement"
+            },
+            {
+              "code": "SAUV",
+              "meaning": "sauvegarde de biens"
+            },
+            {
+              "code": "ALIM",
+              "meaning": "alimentation"
+            }
+          ]
+        }
+      ],
+      "rules": [
+        "Action offensive : flèche droite ; prévue en pointillés, en cours en trait continu.",
+        "Les couleurs représentent les mêmes catégories que page 13. Les sigles et horaires sont des surcharges, pas des formes nouvelles.",
+        "Les actions offensives sont destinées à prendre le devant sur la cinétique du sinistre.",
+        "Une action offensive peut être globale ou orientée thématiquement, positionnée dans l'espace et planifiée dans le temps.",
+        "La position de l'action et le mode de combinaison des actions donnent un sens particulier à l'action.",
+        "Les sigles visibles sur la page sont des types/surcharges d'actions et ne constituent pas de nouvelles formes graphiques."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 15,
+      "title": "Mémento GOC — page 15",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Action offensive aérienne HBE",
+          "shape": "trois cercles chevauchés",
+          "color": "noir",
+          "style": "contour",
+          "meaning": "Action offensive aérienne par Hélicoptère Bombardier d'Eau",
+          "text_inside": ""
+        },
+        {
+          "label": "Largage HBE eau",
+          "shape": "trois cercles chevauchés",
+          "color": "bleu",
+          "style": "contour",
+          "meaning": "Largage HBE d'eau",
+          "text_inside": ""
+        },
+        {
+          "label": "Largage HBE retardant",
+          "shape": "trois cercles chevauchés",
+          "color": "orange",
+          "style": "contour",
+          "meaning": "Largage HBE de retardant",
+          "text_inside": ""
+        },
+        {
+          "label": "Action offensive aérienne ABE",
+          "shape": "trois ellipses horizontales chevauchées",
+          "color": "noir",
+          "style": "contour",
+          "meaning": "Action offensive aérienne par Avion Bombardier d'Eau",
+          "text_inside": ""
+        },
+        {
+          "label": "Largage ABE eau",
+          "shape": "trois ellipses horizontales chevauchées",
+          "color": "bleu",
+          "style": "contour",
+          "meaning": "Largage ABE d'eau",
+          "text_inside": ""
+        },
+        {
+          "label": "Largage ABE retardant",
+          "shape": "trois ellipses horizontales chevauchées",
+          "color": "orange",
+          "style": "contour",
+          "meaning": "Largage ABE de retardant",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Largage HBE : trois cercles décalés qui se chevauchent ; ABE : trois ellipses horizontales décalées qui se chevauchent.",
+        "Contours bleus : eau ; contours orange : retardant."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 16,
+      "title": "Mémento GOC — page 16",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Défensif linéaire prévu",
+          "shape": "rangée de triangles orientés vers le haut",
+          "color": "variable selon catégorie",
+          "style": "contour/intérieur blanc",
+          "meaning": "Action défensive linéaire prévue",
+          "text_inside": ""
+        },
+        {
+          "label": "Défensif linéaire en cours",
+          "shape": "rangée de triangles orientés vers le haut",
+          "color": "variable selon catégorie",
+          "style": "plein",
+          "meaning": "Action défensive linéaire en cours",
+          "text_inside": ""
+        },
+        {
+          "label": "Défensif périmétral prévu",
+          "shape": "cercle entouré de pointes",
+          "color": "variable selon catégorie",
+          "style": "contour",
+          "meaning": "Action défensive périmétrale prévue",
+          "text_inside": ""
+        },
+        {
+          "label": "Défensif périmétral en cours",
+          "shape": "cercle entouré de pointes",
+          "color": "variable selon catégorie",
+          "style": "pointes pleines",
+          "meaning": "Action défensive périmétrale en cours",
+          "text_inside": ""
+        },
+        {
+          "label": "Défensif — secours à personne/sanitaire",
+          "shape": "symbole défensif",
+          "color": "vert",
+          "style": "catégorie",
+          "meaning": "Périmètre de sécurité / confinement",
+          "text_inside": ""
+        },
+        {
+          "label": "Défensif — incendie",
+          "shape": "symbole défensif",
+          "color": "rouge",
+          "style": "catégorie",
+          "meaning": "Ligne d'arrêt / protection de points sensibles",
+          "text_inside": ""
+        },
+        {
+          "label": "Défensif — risques particuliers",
+          "shape": "symbole défensif",
+          "color": "orange",
+          "style": "catégorie",
+          "meaning": "Barrage écran / isolement",
+          "text_inside": ""
+        },
+        {
+          "label": "Défensif — eau",
+          "shape": "symbole défensif",
+          "color": "bleu",
+          "style": "catégorie",
+          "meaning": "Endiguement / protection de point sensible",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Défensif linéaire : rangée de triangles orientés vers le haut ; prévus à intérieur blanc, en cours pleins.",
+        "Défensif périmétral : cercle entouré de pointes ; prévu en contour, en cours avec pointes pleines.",
+        "Catégories : secours à personne/sanitaire vert, incendie rouge, risques particuliers orange, eau bleu.",
+        "Les actions défensives visent à faire barrage à la progression d'un phénomène dynamique.",
+        "Le défensif peut être linéaire ou périmétral."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 17,
+      "title": "Mémento GOC — page 17",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Poste de commandement prévu",
+          "shape": "rectangle-drapeau sur hampe",
+          "color": "mauve",
+          "style": "pointillé",
+          "meaning": "Poste de commandement prévu",
+          "text_inside": ""
+        },
+        {
+          "label": "Poste de commandement actif",
+          "shape": "rectangle-drapeau sur hampe",
+          "color": "mauve",
+          "style": "trait continu",
+          "meaning": "Poste de commandement actif",
+          "text_inside": ""
+        },
+        {
+          "label": "PC colonne / PC 2 fonctions",
+          "shape": "points de surcharge",
+          "color": "mauve",
+          "style": "3 points de niveau alignés à l'extérieur du symbole, au-dessus ou au-dessous, jamais à l'intérieur",
+          "meaning": "Niveau/type de poste de commandement",
+          "text_inside": ""
+        },
+        {
+          "label": "PC de site",
+          "shape": "points de surcharge",
+          "color": "mauve",
+          "style": "4 points de niveau alignés à l'extérieur du symbole, au-dessus ou au-dessous, jamais à l'intérieur",
+          "meaning": "Poste de commandement de site",
+          "text_inside": ""
+        },
+        {
+          "label": "Point de transit prévu",
+          "shape": "cercle sur ligne fléchée",
+          "color": "mauve",
+          "style": "pointillé",
+          "meaning": "Point de transit prévu",
+          "text_inside": ""
+        },
+        {
+          "label": "Point de transit actif",
+          "shape": "cercle sur ligne fléchée",
+          "color": "mauve",
+          "style": "trait continu",
+          "meaning": "Point de transit actif",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Poste de commandement : rectangle en forme de drapeau sur une hampe, en mauve ; prévu en pointillés, actif en continu.",
+        "Trois points : PC de colonne ou PC 2 fonctions ; quatre points : PC de site.",
+        "Les points de niveau de commandement sont une surcharge extérieure : les placer au-dessus ou au-dessous du symbole, jamais dans sa forme. Ne pas les confondre avec les pointillés du contour indiquant l'état prévu.",
+        "Point de transit : cercle sur une ligne fléchée, mauve ; prévu en pointillés, actif en continu."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 18,
+      "title": "Mémento GOC — page 18",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Véhicule sapeur-pompier",
+          "shape": "rectangle avec 1 trait vertical supérieur",
+          "color": "variable selon catégorie",
+          "style": "prévu pointillé / actif continu",
+          "meaning": "Moyen terrestre sapeur-pompier : véhicule",
+          "text_inside": ""
+        },
+        {
+          "label": "Groupe sapeur-pompier",
+          "shape": "rectangle avec 2 traits verticaux supérieurs",
+          "color": "variable selon catégorie",
+          "style": "continu",
+          "meaning": "Moyen terrestre sapeur-pompier : groupe",
+          "text_inside": ""
+        },
+        {
+          "label": "Colonne sapeur-pompier",
+          "shape": "rectangle avec 3 traits verticaux supérieurs",
+          "color": "variable selon catégorie",
+          "style": "continu",
+          "meaning": "Moyen terrestre sapeur-pompier : colonne",
+          "text_inside": ""
+        },
+        {
+          "label": "Moyen terrestre non sapeur-pompier",
+          "shape": "rectangle sans trait vertical supérieur",
+          "color": "variable selon catégorie",
+          "style": "prévu pointillé / actif continu",
+          "meaning": "Moyen terrestre non sapeur-pompier",
+          "text_inside": ""
+        },
+        {
+          "label": "Moyen — secours à personne/sanitaire",
+          "shape": "rectangle de moyen",
+          "color": "vert",
+          "style": "catégorie",
+          "meaning": "Catégorie secours à personne / sanitaire",
+          "text_inside": ""
+        },
+        {
+          "label": "Moyen — incendie",
+          "shape": "rectangle de moyen",
+          "color": "rouge",
+          "style": "catégorie",
+          "meaning": "Catégorie incendie",
+          "text_inside": ""
+        },
+        {
+          "label": "Moyen — risques particuliers",
+          "shape": "rectangle de moyen",
+          "color": "orange",
+          "style": "catégorie",
+          "meaning": "Catégorie risques particuliers",
+          "text_inside": ""
+        },
+        {
+          "label": "Moyen — eau",
+          "shape": "rectangle de moyen",
+          "color": "bleu",
+          "style": "catégorie",
+          "meaning": "Catégorie ayant trait à l'eau",
+          "text_inside": ""
+        }
+      ],
+      "tables": [
+        {
+          "title": "Exemples de types de moyens visibles",
+          "entries": [
+            {
+              "code": "INC",
+              "meaning": "identifiant moyen incendie (exemple)"
+            },
+            {
+              "code": "SAP",
+              "meaning": "type de moyen constitué cité sur la page"
+            },
+            {
+              "code": "LEF",
+              "meaning": "type de moyen constitué cité sur la page"
+            }
+          ],
+          "note": "La page donne ces sigles comme exemples ; leur développement complet n'est pas explicité visuellement."
+        }
+      ],
+      "rules": [
+        "Moyens terrestres sapeurs-pompiers : rectangle avec un trait vertical au-dessus pour un véhicule, deux pour un groupe, trois pour une colonne.",
+        "Moyens terrestres non sapeurs-pompiers : rectangle sans ces traits.",
+        "Prévu : contour pointillé ; actif : contour continu. Catégories vert personnes/sanitaire, rouge incendie, orange risques particuliers, bleu eau.",
+        "Trois catégories de moyens d'intervention sont distinguées dans la doctrine ; la page présente les moyens terrestres sapeurs-pompiers et non sapeurs-pompiers.",
+        "L'identifiant d'un moyen peut préciser son type et son origine/rattachement."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 19,
+      "title": "Mémento GOC — page 19",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Moyen d'intervention aérien prévu",
+          "shape": "cadre rectangulaire horizontal contenant deux triangles latéraux en nœud papillon : bases verticales à gauche et à droite, pointes se rejoignant au centre",
+          "color": "variable selon catégorie",
+          "style": "cadre extérieur en pointillés ; deux triangles intérieurs en contour continu, non remplis, sur fond blanc ; petit espace entre les triangles et le cadre",
+          "meaning": "Moyen aérien prévu",
+          "text_inside": ""
+        },
+        {
+          "label": "Moyen d'intervention aérien actif",
+          "shape": "cadre rectangulaire horizontal contenant deux triangles latéraux en nœud papillon : bases verticales à gauche et à droite, pointes se rejoignant au centre",
+          "color": "variable selon catégorie",
+          "style": "cadre extérieur en trait continu ; deux triangles intérieurs pleins de la couleur de catégorie ; espaces blancs au-dessus et au-dessous et fine marge blanche entre triangles et cadre",
+          "meaning": "Moyen aérien actif",
+          "text_inside": ""
+        },
+        {
+          "label": "Aérien — sanitaire/sauvetage",
+          "shape": "symbole de moyen aérien",
+          "color": "vert",
+          "style": "catégorie",
+          "meaning": "Sanitaire / sauvetage",
+          "text_inside": ""
+        },
+        {
+          "label": "Aérien — lutte contre incendie",
+          "shape": "symbole de moyen aérien",
+          "color": "rouge",
+          "style": "catégorie",
+          "meaning": "Lutte contre l'incendie (ABE et HBE)",
+          "text_inside": ""
+        },
+        {
+          "label": "Aérien — risques particuliers",
+          "shape": "symbole de moyen aérien",
+          "color": "orange",
+          "style": "catégorie",
+          "meaning": "Risques particuliers",
+          "text_inside": ""
+        },
+        {
+          "label": "Aérien — eau",
+          "shape": "symbole de moyen aérien",
+          "color": "bleu",
+          "style": "catégorie",
+          "meaning": "Lié à l'eau",
+          "text_inside": ""
+        },
+        {
+          "label": "Aérien — commandement/observation",
+          "shape": "symbole de moyen aérien",
+          "color": "mauve",
+          "style": "catégorie",
+          "meaning": "Commandement / observation",
+          "text_inside": ""
+        },
+        {
+          "label": "Ressource / infrastructure / logistique",
+          "shape": "rectangle avec barre horizontale au-dessus",
+          "color": "variable selon catégorie",
+          "style": "prévu pointillé / actif continu",
+          "meaning": "Ressource, infrastructure ou logistique opérationnelle",
+          "text_inside": ""
+        }
+      ],
+      "tables": [
+        {
+          "title": "Abréviations de ressources, infrastructures et logistiques",
+          "entries": [
+            {
+              "code": "P",
+              "meaning": "Parking"
+            },
+            {
+              "code": "H",
+              "meaning": "Héliport"
+            },
+            {
+              "code": "PRV",
+              "meaning": "Point de Regroupement des Victimes"
+            },
+            {
+              "code": "PMA",
+              "meaning": "Poste Médical Avancé"
+            },
+            {
+              "code": "CH",
+              "meaning": "Hôpital"
+            },
+            {
+              "code": "MOR",
+              "meaning": "Morgue"
+            },
+            {
+              "code": "MED",
+              "meaning": "Médecin"
+            },
+            {
+              "code": "PSY",
+              "meaning": "Psychologue"
+            },
+            {
+              "code": "VET",
+              "meaning": "Vétérinaire"
+            },
+            {
+              "code": "PHAR",
+              "meaning": "Pharmacie"
+            },
+            {
+              "code": "CRM",
+              "meaning": "Centre de Regroupement des Moyens"
+            },
+            {
+              "code": "REST",
+              "meaning": "Unité de Restauration"
+            },
+            {
+              "code": "MEL",
+              "meaning": "Logistique Mécanique"
+            },
+            {
+              "code": "OIL",
+              "meaning": "Ravitaillement carburant"
+            },
+            {
+              "code": "ELEC",
+              "meaning": "Point d'alimentation électrique"
+            },
+            {
+              "code": "EMUL",
+              "meaning": "Réserve émulseur"
+            }
+          ],
+          "note": "La page montre également un pictogramme 'Moyens du Génie'."
+        }
+      ],
+      "rules": [
+        "Moyen aérien : cadre rectangulaire horizontal avec deux triangles latéraux en nœud papillon, bases verticales à gauche et à droite, pointes jointes au centre. Ne pas dessiner deux triangles superposés verticalement.",
+        "Moyen aérien prévu : cadre pointillé et triangles non remplis à contours continus. Moyen aérien actif : cadre continu et triangles pleins de la couleur de catégorie, avec des espaces blancs au-dessus et au-dessous. Le type, par exemple CL 415, est écrit sous le cadre.",
+        "Catégories aériennes : vert sanitaire/sauvetage ; rouge lutte contre incendie ; orange risques particuliers ; bleu eau ; mauve commandement/observation.",
+        "Ressources, infrastructures et logistiques : rectangle avec une barre horizontale au-dessus ; exemple CH en vert.",
+        "Les ressources, infrastructures et logistiques opérationnelles sont regroupées en une catégorie unique.",
+        "Elles peuvent être typées par une abréviation textuelle et catégorisées par couleur."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 20,
+      "title": "Mémento GOC — page 20",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Secteur géographique",
+          "shape": "polygone fermé",
+          "color": "mauve",
+          "style": "alternance traits-points",
+          "meaning": "Délimitation d'un secteur géographique",
+          "text_inside": ""
+        },
+        {
+          "label": "Secteur géographique — chef de groupe",
+          "shape": "polygone de secteur + surcharge",
+          "color": "mauve",
+          "style": "2 points de niveau alignés à l'extérieur du polygone, au-dessus ou au-dessous, jamais à l'intérieur ; contour mauve alternant traits et points",
+          "meaning": "Secteur lié au niveau Chef de Groupe",
+          "text_inside": ""
+        },
+        {
+          "label": "Secteur géographique — chef de colonne",
+          "shape": "polygone de secteur + surcharge",
+          "color": "mauve",
+          "style": "3 points de niveau alignés à l'extérieur du polygone, au-dessus ou au-dessous, jamais à l'intérieur ; contour mauve alternant traits et points",
+          "meaning": "Secteur lié au niveau Chef de Colonne",
+          "text_inside": ""
+        },
+        {
+          "label": "Secteur géographique — chef de site",
+          "shape": "polygone de secteur + surcharge",
+          "color": "mauve",
+          "style": "4 points de niveau alignés à l'extérieur du polygone, au-dessus ou au-dessous, jamais à l'intérieur ; contour mauve alternant traits et points",
+          "meaning": "Secteur lié au niveau Chef de Site",
+          "text_inside": ""
+        },
+        {
+          "label": "Secteur fonctionnel",
+          "shape": "losange",
+          "color": "mauve + couleur de catégorie",
+          "style": "partie inférieure mauve",
+          "meaning": "Secteur fonctionnel avec catégorie dans la partie supérieure",
+          "text_inside": ""
+        },
+        {
+          "label": "Secteur fonctionnel — secours à personne/sanitaire",
+          "shape": "losange",
+          "color": "mauve + vert",
+          "style": "bicolore",
+          "meaning": "Secteur fonctionnel secours à personne/sanitaire",
+          "text_inside": ""
+        },
+        {
+          "label": "Secteur fonctionnel — incendie",
+          "shape": "losange",
+          "color": "mauve + rouge",
+          "style": "bicolore",
+          "meaning": "Secteur fonctionnel incendie",
+          "text_inside": ""
+        },
+        {
+          "label": "Secteur fonctionnel — risques particuliers",
+          "shape": "losange",
+          "color": "mauve + orange",
+          "style": "bicolore",
+          "meaning": "Secteur fonctionnel risques particuliers",
+          "text_inside": ""
+        },
+        {
+          "label": "Secteur fonctionnel — eau",
+          "shape": "losange",
+          "color": "mauve + bleu",
+          "style": "bicolore",
+          "meaning": "Secteur fonctionnel ayant trait à l'eau",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Secteur géographique : polygone mauve au tracé alternant traits et points, surchargé du niveau de commandement.",
+        "Niveaux : deux points chef de groupe, trois chef de colonne, quatre chef de site.",
+        "Pour les secteurs géographiques et fonctionnels, les points de niveau sont alignés à l'extérieur de la forme, au-dessus ou au-dessous : jamais à l'intérieur du polygone ou du losange. Ils sont distincts des points composant le tracé du contour.",
+        "Secteur fonctionnel : losange, partie inférieure mauve ; catégorie affichée dans sa partie supérieure.",
+        "La sectorisation géographique matérialise les secteurs au moyen d'un polygone mauve surchargé d'une indication du niveau de commandement.",
+        "La sectorisation fonctionnelle matérialise la catégorie du secteur et le niveau de commandement associé."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 21,
+      "title": "Mémento GOC — page 21",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Orientation",
+          "shape": "flèche vers le nord",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Orientation de la carte",
+          "text_inside": "N"
+        },
+        {
+          "label": "Vent",
+          "shape": "flèche",
+          "color": "noir",
+          "style": "trait continu",
+          "meaning": "Direction et force du vent",
+          "text_inside": "20 km/h"
+        },
+        {
+          "label": "À partir de",
+          "shape": "barre verticale avant groupe horaire",
+          "color": "noir",
+          "style": "annotation temporelle",
+          "meaning": "À partir de l'heure indiquée",
+          "text_inside": "1500"
+        },
+        {
+          "label": "Jusqu'à",
+          "shape": "barre verticale après groupe horaire",
+          "color": "noir",
+          "style": "annotation temporelle",
+          "meaning": "Jusqu'à l'heure indiquée",
+          "text_inside": "1500"
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Orientation : flèche vers le nord avec N. Vent : flèche indiquant direction et force (exemple 20 km/h).",
+        "Une barre avant 1500 signifie à partir de 15h00 ; une barre après 1500 signifie jusqu’à 15h00."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 22,
+      "title": "Mémento GOC — page 22",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Exemple composé — feu urbain",
+          "shape": "carte opérationnelle composée",
+          "color": "multicolore",
+          "style": "exemple",
+          "meaning": "Exemple combinant voies, secteurs, moyens, actions, sinistre, points d'eau, vent et orientation",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Exemple composé de feu urbain : voies noires, secteurs mauves, moyens et actions rouges, points d’eau bleus.",
+        "Les positions sont propres à cet exemple. Consulter l’image pour les détails ; ne pas inventer de nouvelles conventions à partir du plan.",
+        "Cette page est un exemple composé ; les positions et associations observées sont propres au scénario et ne doivent pas être transformées en nouvelles conventions générales."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 23,
+      "title": "Mémento GOC — page 23",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "ENSOSP - Mémento GOC – Outils graphiques"
+        }
+      ],
+      "symbols": [
+        {
+          "label": "Exemple composé — feu de forêt",
+          "shape": "carte opérationnelle sur fond topographique",
+          "color": "multicolore",
+          "style": "exemple",
+          "meaning": "Exemple combinant conventions opérationnelles sur fond cartographique",
+          "text_inside": ""
+        }
+      ],
+      "tables": [],
+      "rules": [
+        "Exemple composé de feu de forêt sur fond cartographique. Les détails du fond et les petits libellés ne sont pas transcrits visuellement ici ; consulter la page.",
+        "Cette page est un exemple composé sur fond cartographique ; les détails propres au scénario ne constituent pas de nouvelles conventions générales."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    },
+    {
+      "page": 24,
+      "title": "Mémento GOC — page 24",
+      "sections": [
+        {
+          "heading": "Texte extrait directement du PDF",
+          "text": "Ce mémento présente une méthode et des outils.\n\n                                                 Il appartient à chacun de se les approprier afin\n                               d’être, individuellement et collectivement, le plus\n                               efficient possible durant une intervention.\n\nIl ne faut pas oublier que l’objectif du COS (commandant des opérations de secours)est de réussir au mieux les opérations en toute sécurité.                                                                                                                                                                                                                                                                                                                               978-2-493547-00-2\n                                                                                                                                                                                                                ISBN\n\n                                                    -\n                                                                                                                                                                                                                                                                                                                                                                                                                                réservés\n\n\n   Mémento à l’usage des officiers de sapeurs-pompiers                                 Mémento à l’usage des officiers de sapeurs-pompiers                                    Mémento\n  Chef de groupe                        Chef de colonne                        Chef de site                                                                 droits\n                                                                                                                                                                                                                tous\n                                                                                                                                                                                                                                                                                                                                                                            ENSOSP,"
+        }
+      ],
+      "symbols": [],
+      "tables": [],
+      "rules": [
+        "Quatrième de couverture : texte éditorial et présentations de livres. Aucune règle de couleur ni symbole de danger chimique défini sur cette page."
+      ],
+      "verification": {
+        "status": "assistant_visual_audit_exhaustive_not_trainer_validated",
+        "date": "2026-09-30",
+        "source_pdf_sha256": "eae50c769121c0a7b4c8030d260450c0ecf3b695c8ae9d34de89986bf32a6105",
+        "scope": "Systematic page-by-page transcription of visible graphical conventions, combined with PDF embedded text where available; examples remain scenario-specific and are not promoted to general doctrine. Not trainer validated."
+      }
+    }
+  ]
+}

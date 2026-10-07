@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react"
 import { ChatKit, useChatKit, type ColorScheme } from "@openai/chatkit-react"
 import GuidedTour, { TOUR_STEPS } from "./GuidedTour"
+import { timedFetch } from "./timedFetch"
 
 type ChatKitComponentProps = {
   userId: string
@@ -31,7 +32,7 @@ const TOUR_SEEN_KEY = "chatkit-tour-seen"
 const ACCESS_CODE_KEY = "chatkit-access-code"
 const PROGRESS_POLL_MS = 30_000
 
-const API_BASE = process.env.NEXT_PUBLIC_CHATKIT_API_URL ?? "http://127.0.0.1:8000"
+const API_BASE = "/backend"
 
 function readLocal(key: string): string | null {
   try {
@@ -230,7 +231,7 @@ function ChatKitComponent({ userId, theme }: ChatKitComponentProps) {
 
   const buildHeaders = useCallback((): Record<string, string> => {
     const headers: Record<string, string> = {
-      userId: userId,
+      "X-ChatKit-Request": "1",
       "X-Provider": provider,
     }
     if (apiKey) headers["X-Provider-Api-Key"] = apiKey
@@ -245,6 +246,11 @@ function ChatKitComponent({ userId, theme }: ChatKitComponentProps) {
     try {
       const response = await fetch(`${API_BASE}/progress`, { headers: buildHeaders() })
       if (response.status === 401) {
+        const body = await response.clone().json().catch(() => ({}))
+        if (body.code === 'login_required') {
+          window.dispatchEvent(new Event('chatkit-session-expired'))
+          return
+        }
         dropAccessCode("Code d'accès refusé ou expiré.")
         return
       }
@@ -280,14 +286,19 @@ function ChatKitComponent({ userId, theme }: ChatKitComponentProps) {
   const _fetch = useCallback(
     async function customFetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
       const requestInit: RequestInit = { ...(init ?? {}) }
-      requestInit.headers = { ...buildHeaders() }
+      const headers = new Headers(input instanceof Request ? input.headers : undefined)
+      new Headers(init?.headers).forEach((value, key) => headers.set(key, value))
+      Object.entries(buildHeaders()).forEach(([key, value]) => headers.set(key, value))
+      requestInit.headers = headers
+      requestInit.credentials = 'same-origin'
       try {
-        const response = await fetch(input, requestInit)
+        const response = await timedFetch(input, requestInit)
 
         if (!response.ok) {
           let message = `Erreur ${response.status}`
           try {
             const body = await response.json()
+            if (body?.code === 'login_required') window.dispatchEvent(new Event('chatkit-session-expired'))
             message = String(body?.message ?? body?.error ?? message)
           } catch {
             // non-JSON body: keep the status message
@@ -311,9 +322,8 @@ function ChatKitComponent({ userId, theme }: ChatKitComponentProps) {
 
   const chatkit = useChatKit({
     api: {
-      // Backend base URL and ChatKit domainKey are injected at build time
-      // (NEXT_PUBLIC_* are baked into the bundle). Defaults keep local dev working.
-      url: `${API_BASE}/chatkit`,
+      // Keep API requests on the frontend origin so HttpOnly cookies are first-party.
+      url: `${typeof window === 'undefined' ? 'http://localhost:3000' : window.location.origin}${API_BASE}/chatkit`,
       domainKey: process.env.NEXT_PUBLIC_CHATKIT_DOMAIN_KEY ?? "localhost",
       fetch: _fetch,
       uploadStrategy: { type: "two_phase" },
@@ -402,6 +412,7 @@ function ChatKitComponent({ userId, theme }: ChatKitComponentProps) {
     },
     onError: (event) => {
       console.error("ChatKit error: ", event.error)
+      setRequestError(event.error.message || 'La réponse a été interrompue. Veuillez réessayer.')
     },
   })
 

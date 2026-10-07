@@ -58,3 +58,4 @@ server/app/data/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+server/app/generated_flashcards/

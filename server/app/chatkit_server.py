@@ -6,6 +6,8 @@ and records learner feedback."""
 from __future__ import annotations
 
 import asyncio
+import os
+from contextlib import suppress
 import base64
 from datetime import datetime
 from pathlib import Path
@@ -23,6 +25,7 @@ from chatkit.types import (
     ImageAttachment,
     ProgressUpdateEvent,
     ThreadItemDoneEvent,
+    ThreadItemReplacedEvent,
     ThreadMetadata,
     ThreadStreamEvent,
     UserMessageItem,
@@ -120,19 +123,25 @@ class MyChatKitServer(ChatKitServer[dict[str, Any]]):
         def progress(text: str, icon: str = "sparkle") -> None:
             loop.call_soon_threadsafe(queue.put_nowait, (text, icon))
 
-        task = asyncio.create_task(coro_factory(progress))
-        while True:
-            if task.done() and queue.empty():
-                break
-            try:
-                text, icon = await asyncio.wait_for(queue.get(), timeout=0.5)
-            except asyncio.TimeoutError:
-                continue
-            try:
+        task = asyncio.create_task(asyncio.wait_for(
+            coro_factory(progress), timeout=float(os.getenv('CHAT_RESPONSE_TIMEOUT_SECONDS', '180'))))
+        try:
+            while not (task.done() and queue.empty()):
+                try:
+                    text, icon = await asyncio.wait_for(queue.get(), timeout=0.5)
+                except asyncio.TimeoutError:
+                    continue
                 yield ProgressUpdateEvent(text=text, icon=icon)
-            except Exception:
-                pass
-        blocks = await task
+            try:
+                blocks = await task
+            except TimeoutError:
+                blocks = [{'type': 'text', 'text': 'La réponse a pris trop de temps. Veuillez réessayer votre demande.'}]
+        finally:
+            # Closing a stream must not leave model calls running in the background.
+            if not task.done():
+                task.cancel()
+            with suppress(asyncio.CancelledError, Exception):
+                await task
         for ev in self._render(thread, context, blocks):
             yield ev
 
@@ -170,6 +179,17 @@ class MyChatKitServer(ChatKitServer[dict[str, Any]]):
             command = str(payload.get("command") or "").strip()
             if not command:
                 return
+            if _sender is not None and command.startswith('fiche '):
+                blocks = await self.orch.handle_command(command, agent_context)
+                if len(blocks) == 1 and blocks[0].get('flashcard'):
+                    updated = _sender.model_copy(update={
+                        'widget': blocks[0]['widget'], 'title': blocks[0]['title']})
+                    # ChatKit persists replacement events with the same item id.
+                    yield ThreadItemReplacedEvent(item=updated)
+                else:
+                    for event in self._render(_thread, _context, blocks):
+                        yield event
+                return
             transition = self.orch.peek_transition_message(agent_context, command)
             if transition:
                 yield self._message(_thread, _context, transition)
@@ -185,6 +205,7 @@ class MyChatKitServer(ChatKitServer[dict[str, Any]]):
         raise RuntimeError(f"Unsupported action type: {_action.type}")
 
     async def add_feedback(self, thread_id: str, item_ids: list[str], feedback: str, context: TContext) -> None:
+        await self.store.load_thread(thread_id, context)
         user_id = str((context or {}).get(USER_ID_KEY) or "anonymous")
         try:
             self.orch.record_feedback(user_id, thread_id, list(item_ids), str(feedback))
