@@ -89,7 +89,8 @@ docs/learner_guide.md
 - Python 3.11+ (the backend Docker image uses Python 3.11).
 - Node.js 20+ (the frontend Docker image uses Node.js 20).
 - A Mistral key for the default tutoring provider, or an OpenAI key when using OpenAI.
-- An OpenAI key for image analysis and the dedicated free-question answering path, even when Mistral is selected for tutoring.
+- An OpenRouter key when using OpenRouter as the tutoring provider.
+- An OpenAI key for image analysis, speech synthesis and the dedicated free-question answering path, even when Mistral or OpenRouter is selected for tutoring.
 - An OpenAI vector store only for paths using hosted file search; image retrieval uses local course passages.
 
 Backend dependencies are listed in:
@@ -106,19 +107,61 @@ web/package.json
 
 ## Configuration
 
+The tutoring model can run through **Mistral**, **OpenAI**, or **OpenRouter**.
 The examples below use **Git Bash on Windows**, from the project root. Set keys
-in the same terminal that starts the backend; do not commit real keys.
+in the same terminal that starts the backend and never commit real API keys.
+
+### Mistral
 
 ```bash
 export DEFAULT_PROVIDER="mistral"
-export MISTRAL_API_KEY="YOUR_MISTRAL_KEY"
-export OPENAI_API_KEY="YOUR_OPENAI_KEY"
+read -s -p "Mistral API key: " MISTRAL_API_KEY
+echo
+export MISTRAL_API_KEY
+export MISTRAL_MODEL="mistral/mistral-large-latest"
 ```
 
-The default Mistral model is `mistral/mistral-large-latest`. Set `MISTRAL_MODEL`
-to a model available to your account if necessary. For OpenAI tutoring, set
-`DEFAULT_PROVIDER=openai`; the default `OPENAI_MODEL` is `gpt-4.1`.
-The chat settings also allow provider selection and an optional personal key.
+### OpenAI
+
+```bash
+export DEFAULT_PROVIDER="openai"
+read -s -p "OpenAI API key: " OPENAI_API_KEY
+echo
+export OPENAI_API_KEY
+export OPENAI_MODEL="gpt-4o-mini-2024-07-18"
+export OPENAI_VISION_MODEL="gpt-4o-mini-2024-07-18"
+```
+
+### OpenRouter
+
+OpenRouter allows any compatible model from its catalog by using the
+`provider/model` identifier. For example:
+
+```bash
+export DEFAULT_PROVIDER="openrouter"
+read -s -p "OpenRouter API key: " OPENROUTER_API_KEY
+echo
+export OPENROUTER_API_KEY
+export OPENROUTER_MODEL="google/gemma-3-12b-it"
+export OPENROUTER_VISION_MODEL="qwen/qwen3-vl-8b-instruct"
+```
+
+`OPENROUTER_BASE_URL` defaults to `https://openrouter.ai/api/v1`.
+`OPENROUTER_HTTP_REFERER` and `OPENROUTER_APP_NAME` optionally identify the
+application to OpenRouter. Because support for native structured-output
+parameters varies between OpenRouter routes, the server requests JSON text and
+validates it locally with Pydantic. OpenAI continues to use native structured
+outputs.
+
+The provider and an optional personal API key can also be selected from the
+chat's settings panel. A browser selection overrides `DEFAULT_PROVIDER` for
+that request, and a personal key overrides the corresponding server key.
+
+Some dedicated features still require OpenAI even when Mistral or OpenRouter is
+the tutoring provider: speech synthesis uses `OPENAI_TTS_MODEL` (default
+`gpt-4o-mini-tts`), while the dedicated visual-analysis and free-question paths
+use their configured OpenAI models. Set `OPENAI_API_KEY` as well when those
+features are needed.
 
 Optional backend settings:
 

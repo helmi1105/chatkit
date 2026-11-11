@@ -14,6 +14,16 @@ class DiagnosticRound(BaseModel):
     questions: list[QcmQuestion] = Field(default_factory=list)
 
 
+class DiagnosticSingleQuestion(BaseModel):
+    """Required output for a focused one-KC repair.
+
+    Unlike DiagnosticRound, this cannot silently validate a response that
+    omitted the question field and turn it into an empty list.
+    """
+    scenario: str = ''
+    question: QcmQuestion
+
+
 def curriculum_groups(graph):
     """Contiguous course groups, including root KCs; sequence is NOT prerequisite."""
     groups = []
@@ -26,6 +36,114 @@ def curriculum_groups(graph):
 
 
 class HierarchicalDiagnostic:
+    @staticmethod
+    def _server_owned_question(raw_question, kc_id, source_pages=()):
+        """Attach scoring metadata chosen by the policy, never by the model.
+
+        This is safe only for a generation request containing exactly one KC;
+        callers enforce that invariant before using the returned question.
+        """
+        if isinstance(raw_question, BaseModel):
+            raw_question = raw_question.model_dump()
+        if not isinstance(raw_question, dict):
+            return None
+        question = dict(raw_question)
+        # In a one-page, one-KC request the source page is unambiguous.  Small
+        # models sometimes omit it even though the generated content is valid.
+        if len(source_pages) == 1:
+            try:
+                returned_page = int(question.get('page'))
+            except (TypeError, ValueError):
+                returned_page = None
+            if returned_page != source_pages[0]:
+                question['page'] = source_pages[0]
+        question.update(
+            kc_id=kc_id,
+            role='current',
+            assessed_kc_ids=[kc_id],
+        )
+        normalized = normalize_questions([question], kc_id)
+        return normalized[0] if len(normalized) == 1 else None
+
+    async def _regenerate_diagnostic_questions_individually(
+        self, sess, group_title, stage, tasks, ctx, *, max_attempts=3
+    ):
+        """Recover a malformed grouped response without weakening scoring.
+
+        Each call contains one and only one curriculum notion.  The server can
+        therefore stamp the requested KC metadata deterministically while the
+        model remains responsible only for the pedagogical content.
+        """
+        questions = []
+        scenario = ''
+        previous = {
+            str(item.get('question') or '').strip().casefold()
+            for values in sess.diagnostic_evidence.values()
+            for item in values
+        }
+        for task in tasks:
+            kid = task['kc_id']
+            pages = self.graph.kc_pages(self.graph.nodes[kid])
+            source = self.doc.pages_text(pages, max_chars=6000)
+            generated = None
+            rejection_reasons = []
+            forbidden_questions = sorted(
+                text for text in previous if text
+            )[-8:]
+            for attempt in range(max_attempts):
+                self._charge_budget(sess)
+                out = await run_structured(
+                    'Hierarchical-diagnostic-single-kc',
+                    'Tu es formateur. Utilise uniquement les extraits fournis. '
+                    'Produis exactement un QCM autonome, avec quatre choix distincts et une seule reponse correcte.',
+                    f"Chapitre : {group_title}. Etape : {stage}.\n"
+                    f"Notion unique : {json.dumps(task, ensure_ascii=False)}\n"
+                    f"Tentative : {attempt + 1}. Questions deja posees, interdites de repetition : "
+                    f"{json.dumps(forbidden_questions, ensure_ascii=False)}\n"
+                    "Produis exactement UNE nouvelle question dans le champ JSON obligatoire `question`. "
+                    "Change nettement l'exemple et l'enonce. "
+                    "answer=lettre A/B/C/D, explanation=justification avec page, page=source. "
+                    "Le serveur ajoutera les identifiants techniques; concentre-toi sur le contenu.\n"
+                    + source,
+                    DiagnosticSingleQuestion,
+                    ctx,
+                )
+                raw_questions = []
+                single_question = getattr(out, 'question', None)
+                if single_question is not None:
+                    raw_questions.append(single_question)
+                # Compatibility for mocked/older provider adapters while
+                # deployments move to the required singular schema.
+                raw_questions.extend(list(getattr(out, 'questions', []) or []))
+                if not raw_questions:
+                    rejection_reasons.append('aucune question')
+                    continue
+                for raw_question in raw_questions:
+                    candidate = self._server_owned_question(raw_question, kid, pages)
+                    if not candidate:
+                        rejection_reasons.append('format QCM invalide')
+                        continue
+                    if candidate['page'] not in pages:
+                        rejection_reasons.append('page source incorrecte')
+                        continue
+                    if candidate['text'].strip().casefold() in previous:
+                        rejection_reasons.append('question repetee')
+                        continue
+                    generated = candidate
+                    scenario = scenario or str(out.scenario or '').strip()
+                    break
+                if generated is not None:
+                    break
+            if generated is None:
+                detail = ', '.join(dict.fromkeys(rejection_reasons)) or 'sortie vide'
+                raise RuntimeError(
+                    f'Diagnostic inexploitable : question absente ou invalide pour {kid} ({detail}).'
+                )
+            questions.append(generated)
+        for number, question in enumerate(questions, start=1):
+            question['number'] = number
+        return questions, scenario
+
     async def _start_hierarchical(self, sess, ctx):
         if sess.diagnostic_stage == 'learning' and not sess.diagnostic_done:
             return [self._text('Le diagnostic est en pause : travaillez la notion en cours, puis il reprendra.'),
@@ -113,14 +231,78 @@ class HierarchicalDiagnostic:
             "Respecte evidence_type : recognition=identification, application=utilisation dans un nouveau cas, "
             "discrimination=choix entre la règle et la confusion observée, transfer=nouveau contexte. "
             "N'affirme pas qu'une erreur prouve une misconception. Chaque énoncé doit rester autonome.\n"
+            + "\nChaque question declare role=current et assessed_kc_ids=[son kc_id unique].\n"
             + source, DiagnosticRound, ctx)
         questions = normalize_questions(out.questions, '')
+        if any(q.get('role') != 'current' or q.get('assessed_kc_ids') != [q['kc_id']]
+               for q in questions):
+            self._charge_budget(sess)
+            repair = await run_structured('Hierarchical-diagnostic-attribution-repair',
+                'Tu es formateur. Utilise uniquement les extraits fournis. Une question par notion, quatre choix distincts.',
+                f"Chapitre : {group['title']}. Etape : {stage}. Taches et preuves precedentes : "
+                f"{json.dumps(tasks, ensure_ascii=False)}. Regenerer exactement une question par KC : {ids}. "
+                "Respecter evidence_type, changer les exemples et ne pas repeter les questions precedentes. Chaque question doit declarer "
+                "role=current et assessed_kc_ids contenant uniquement son kc_id. "
+                "Inclure un numero de page propre a chaque KC.\n" + source,
+                DiagnosticRound, ctx)
+            out = repair
+            questions = normalize_questions(out.questions, '')
+        mapping_ok = len(questions) == len(ids) and {q['kc_id'] for q in questions} == set(ids)
+        attribution_ok = mapping_ok and all(
+            q.get('role') == 'current' and q.get('assessed_kc_ids') == [q['kc_id']]
+            for q in questions
+        )
+        # When a KC has one authoritative page, a missing/wrong page number is
+        # metadata we can repair without spending another model call. The model
+        # received only that page's text, so there is no page choice to infer.
+        if mapping_ok and attribution_ok:
+            for question in questions:
+                source_pages = self.graph.kc_pages(self.graph.nodes[question['kc_id']])
+                if len(source_pages) == 1 and question.get('page') != source_pages[0]:
+                    question['page'] = source_pages[0]
+        previous = {
+            str(item.get('question') or '').strip().casefold()
+            for values in sess.diagnostic_evidence.values()
+            for item in values
+        }
+        invalid_content_ids = {
+            q['kc_id'] for q in questions
+            if q['text'].strip().casefold() in previous
+            or q.get('page') not in self.graph.kc_pages(self.graph.nodes[q['kc_id']])
+        } if mapping_ok and attribution_ok else set()
+        if mapping_ok and attribution_ok and invalid_content_ids:
+            # Keep valid grouped questions and regenerate only invalid KCs.
+            # Usually this is one extra call, even for a multi-question chapter.
+            repair_tasks = [t for t in tasks if t['kc_id'] in invalid_content_ids]
+            repaired, _ = await self._regenerate_diagnostic_questions_individually(
+                sess, group['title'], stage, repair_tasks, ctx,
+                max_attempts=1,
+            )
+            by_kc = {q['kc_id']: q for q in questions
+                     if q['kc_id'] not in invalid_content_ids}
+            by_kc.update({q['kc_id']: q for q in repaired})
+            questions = [by_kc[kid] for kid in ids]
+            for number, question in enumerate(questions, start=1):
+                question['number'] = number
+        elif not mapping_ok or not attribution_ok:
+            # Structural failures need regeneration for every requested KC.
+            questions, fallback_scenario = await self._regenerate_diagnostic_questions_individually(
+                sess, group['title'], stage, tasks, ctx,
+                max_attempts=3,
+            )
+            if fallback_scenario:
+                out.scenario = fallback_scenario
         if len(questions) != len(ids) or {q['kc_id'] for q in questions} != set(ids):
             raise RuntimeError('Diagnostic inexploitable : correspondance question/notion incorrecte.')
+        if any(q.get('role') != 'current' or q.get('assessed_kc_ids') != [q['kc_id']]
+               for q in questions):
+            raise RuntimeError('Diagnostic inexploitable : role ou notions evaluees manquants/incoherents.')
         previous = {o['question'].strip().casefold() for v in sess.diagnostic_evidence.values() for o in v}
-        if any(q['text'].strip().casefold() in previous or
-               q['page'] not in self.graph.kc_pages(self.graph.nodes[q['kc_id']]) for q in questions):
-            raise RuntimeError('Diagnostic inexploitable : question répétée ou source absente.')
+        if any(q['text'].strip().casefold() in previous for q in questions):
+            raise RuntimeError('Diagnostic inexploitable : question répétée après régénération.')
+        if any(q['page'] not in self.graph.kc_pages(self.graph.nodes[q['kc_id']])
+               for q in questions):
+            raise RuntimeError('Diagnostic inexploitable : page source absente après régénération.')
         task_by_kc = {t['kc_id']: t for t in tasks}
         for q in questions:
             task = task_by_kc[q['kc_id']]

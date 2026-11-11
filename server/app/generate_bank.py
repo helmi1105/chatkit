@@ -77,7 +77,7 @@ def write_xlsx(rows: list[dict], path: Path) -> None:
 async def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--per-kc", type=int, default=6)
-    ap.add_argument("--provider", default="mistral", choices=["mistral", "openai"])
+    ap.add_argument("--provider", default="mistral", choices=["mistral", "openai", "openrouter"])
     ap.add_argument("--out", default="bank_candidates.xlsx")
     ap.add_argument("--kc", default="", help="comma-separated kc ids (default: all)")
     args = ap.parse_args()

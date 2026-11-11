@@ -125,13 +125,26 @@ class MyChatKitServer(ChatKitServer[dict[str, Any]]):
 
         task = asyncio.create_task(asyncio.wait_for(
             coro_factory(progress), timeout=float(os.getenv('CHAT_RESPONSE_TIMEOUT_SECONDS', '180'))))
+        heartbeat_seconds = max(
+            0.05, float(os.getenv('CHAT_PROGRESS_HEARTBEAT_SECONDS', '10'))
+        )
+        last_event_at = loop.time()
         try:
             while not (task.done() and queue.empty()):
                 try:
-                    text, icon = await asyncio.wait_for(queue.get(), timeout=0.5)
+                    text, icon = await asyncio.wait_for(
+                        queue.get(), timeout=min(0.5, heartbeat_seconds)
+                    )
                 except asyncio.TimeoutError:
+                    if not task.done() and loop.time() - last_event_at >= heartbeat_seconds:
+                        yield ProgressUpdateEvent(
+                            text="Generation toujours en cours...",
+                            icon="sparkle",
+                        )
+                        last_event_at = loop.time()
                     continue
                 yield ProgressUpdateEvent(text=text, icon=icon)
+                last_event_at = loop.time()
             try:
                 blocks = await task
             except TimeoutError:

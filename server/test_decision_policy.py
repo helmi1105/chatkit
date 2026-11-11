@@ -10,7 +10,8 @@ class PolicyTests(unittest.TestCase):
     def test_replay_and_expert_alternatives(self):
         from app.eval_decisions import evaluate
         state = {'current_kc_id': 'a', 'validation_challenge': False}
-        outcome = {'score': .6, 'threshold': .7, 'remediation_below': .5}
+        outcome = {'score': .6, 'threshold': .7, 'remediation_below': .5,
+                   'coverage_complete': True, 'repeated_failed_objectives': []}
         event = dict(event='pedagogical_decision', learner_state=state, curriculum=[], practice_result=outcome,
                      decision=decide_next_action(state, [], practice_result=outcome))
         self.assertIsNone(evaluate([event])['expert_agreement'])
@@ -42,8 +43,48 @@ class PolicyTests(unittest.TestCase):
     def test_practice_boundaries(self):
         for challenge, score in itertools.product((False, True), (0, .49, .5, .69, .7, 1)):
             result = decide_next_action({'current_kc_id': 'a', 'validation_challenge': challenge}, [],
-                practice_result={'score': score, 'threshold': .7, 'remediation_below': .5})
-            self.assertEqual(result['action'], 'advance' if score >= .7 else ('remediate' if challenge or score < .5 else 'review'))
+                practice_result={'score': score, 'threshold': .7, 'remediation_below': .5,
+                                 'coverage_complete': True, 'repeated_failed_objectives': []})
+            self.assertEqual(result['action'], 'advance' if score >= .7 else ('remediate' if score < .5 else 'review'))
+
+    def test_objective_evidence_changes_high_score_decision(self):
+        state = {'current_kc_id': 'a', 'validation_challenge': False}
+        common = {'score': .8, 'threshold': .7, 'remediation_below': .5,
+                  'coverage_complete': True, 'missing_objectives': [],
+                  'failed_objectives': []}
+        advance = decide_next_action(state, [], practice_result={
+            **common, 'repeated_failed_objectives': []})
+        isolated = decide_next_action(state, [], practice_result={
+            **common, 'failed_objectives': ['E2'], 'repeated_failed_objectives': []})
+        confirm = decide_next_action(state, [], practice_result={
+            **common, 'failed_objectives': ['E3'], 'repeated_failed_objectives': ['E3']})
+        self.assertEqual(advance['action'], 'advance')
+        self.assertEqual(isolated['action'], 'confirm')
+        self.assertEqual(isolated['reason'], 'failed_objective_requires_confirmation')
+        self.assertEqual(isolated['focus_objective_ids'], ['E2'])
+        self.assertEqual(confirm['action'], 'confirm')
+        self.assertEqual(confirm['reason'], 'repeated_objective_failure')
+        self.assertEqual(confirm['focus_objective_ids'], ['E3'])
+
+    def test_score_rules_take_priority_over_objective_failure(self):
+        state = {'current_kc_id': 'a', 'validation_challenge': False}
+        common = {'threshold': .7, 'remediation_below': .5,
+                  'coverage_complete': True, 'failed_objectives': ['E2'],
+                  'repeated_failed_objectives': []}
+        remediate = decide_next_action(
+            state, [], practice_result={**common, 'score': .4})
+        review = decide_next_action(
+            state, [], practice_result={**common, 'score': .6})
+        self.assertEqual(remediate['action'], 'remediate')
+        self.assertEqual(review['action'], 'review')
+
+    def test_incomplete_coverage_confirms(self):
+        result = decide_next_action({'current_kc_id': 'a', 'validation_challenge': False}, [],
+            practice_result={'score': .8, 'threshold': .7, 'remediation_below': .5,
+                             'coverage_complete': False, 'missing_objectives': ['E2'],
+                             'repeated_failed_objectives': []})
+        self.assertEqual(result['action'], 'confirm')
+        self.assertEqual(result['focus_objective_ids'], ['E2'])
 
     def test_old_session_has_unknown_history(self):
         sess = Session.from_dict({'user_id': 'old'})

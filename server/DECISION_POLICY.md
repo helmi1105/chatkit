@@ -39,9 +39,17 @@ this policy. Existing thresholds, ordering, follow-up limits and challenge route
 are preserved. Flat diagnostic and chapter checkpoint routing remain unchanged.
 
 Actions are `probe`, `teach`, `validate` (administer a challenge), `remediate`,
-`review`, `advance` (practice passed), and `finish` (diagnostic stopped).
+`review`, `confirm` (targeted objective check), `advance` (practice and objective
+criteria passed), and `finish` (diagnostic stopped).
 Finish does not imply course mastery. Decisions do not execute lessons or mutate
 sessions; the orchestrator remains responsible for execution and persistence.
+
+After `confirm`, **Refaire le quiz** generates a short quiz containing only the
+failed or missing objective IDs, with new question stems. `review` remains a broad
+retry, while `remediate` presents a lesson followed by a broad retry. Cumulative
+failure counts are retained for analysis, but routing uses unresolved consecutive
+failures; a correct targeted confirmation therefore resolves the objective instead
+of forcing confirmation forever.
 
 New `pedagogical_decision` evidence events contain the versioned decision,
 pre-action learner snapshot, curriculum groups and applicable practice thresholds.
@@ -51,9 +59,10 @@ Existing generation/submission events record subsequent execution.
 Snapshots separate diagnostic observations/status from practice scores and
 validation. They include practice attempts, recorded confusion labels (not proven
 misconceptions), known objectives and newly recorded practice quiz evidence,
-including assessed target IDs. Missing historical evidence stays missing. Objective
-IDs are quiz-local labels; do not treat E1 across different quizzes as a stable
-global objective. Lesson availability is not proof the learner read the lesson.
+including assessed target IDs. Objective evidence is recorded at scoring time with
+the target text and a stable target fingerprint. If a positional ID such as E1 is
+later bound to different target text, its old counts are not merged. Missing
+historical evidence stays missing. Lesson availability is not proof the learner read the lesson.
 Legacy `after_instruction` diagnostic flags are retained as recorded, not corrected
 or used as causal evidence. Confidence is null, not an invented probability.
 

@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import os
+import chatkit.types as chatkit_types
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -29,8 +30,11 @@ from chatkit.types import (
     AttachmentUploadDescriptor,
     ImageAttachment,
     Page,
+    AssistantMessageItem,
+    Thread,
     ThreadItem,
     ThreadMetadata,
+    UserMessageItem,
 )
 from pydantic import TypeAdapter
 
@@ -42,6 +46,17 @@ UPLOAD_DIR = APP_DIR / "uploads"
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
 MAX_IMAGE_ATTACHMENT_BYTES = int(os.getenv("MAX_IMAGE_ATTACHMENT_BYTES", str(5 * 1024 * 1024)))
 MAX_ITEMS_PER_THREAD = int(os.getenv("MAX_ITEMS_PER_THREAD", "400"))
+
+# ChatKit 1.6.5 declares message-content types after the models that refer to
+# them.  With newer Pydantic releases those forward references can retain a
+# placeholder serializer, which only fails when a persisted thread is fetched.
+# Rebuilding the three affected schemas is non-destructive: it changes only
+# their in-process validation/serialization machinery, never stored chat data.
+for _chatkit_model in (UserMessageItem, AssistantMessageItem, Thread):
+    _chatkit_model.model_rebuild(
+        force=True,
+        _types_namespace=vars(chatkit_types),
+    )
 
 _ITEM_ADAPTER: TypeAdapter = TypeAdapter(ThreadItem)
 

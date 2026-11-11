@@ -195,7 +195,7 @@
     "A child of MODULE with children is typed as UNIT.",
     "Leaf nodes are typed as KC.",
     "LES OUTILS GRAPHIQUES remains a standalone KC on page 2.",
-    "Principe de la cartographie opérationnelle remains an introduction MODULE on pages 6-7 with six overview KCs only.",
+    "Principe de la cartographie opérationnelle remains a standalone overview KC on pages 6-7; the six thematic plans are taught as source rules within this KC, not as separate graph nodes.",
     "Pages 22 and 23 remain standalone KCs because there is no printed common parent heading above them."
   ]
 }

@@ -5,7 +5,7 @@ Curriculum sequence is used for ordering, never as prerequisite evidence.
 """
 from copy import deepcopy
 
-POLICY_VERSION = "baseline-rules-v1"
+POLICY_VERSION = "objective-evidence-rules-v3"
 
 def evidence_status(observations):
     if not observations:
@@ -58,6 +58,7 @@ def build_learner_state(sess, graph):
             'recorded_confusions': list(sess.misconceptions.get(kid, [])),
             'known_objectives': list(sess.kc_essential_targets.get(kid, [])),
             'practice_evidence': deepcopy(sess.practice_evidence_by_kc.get(kid, [])),
+            'objective_evidence': deepcopy(getattr(sess, 'objective_evidence_by_kc', {}).get(kid, {})),
             'confidence': None,
         }
     return {
@@ -85,11 +86,24 @@ def decide_next_action(state, curriculum, *, practice_result=None):
     if practice_result is not None:
         score = practice_result['score']
         kid = state['current_kc_id']
-        if score >= practice_result['threshold']:
-            return result('advance', 'practice_threshold_reached', kid)
-        if state['validation_challenge'] or score < practice_result['remediation_below']:
-            return result('remediate', 'failed_challenge' if state['validation_challenge'] else 'low_practice_score', kid)
-        return result('review', 'practice_below_threshold', kid)
+        remediation_below = practice_result.get('remediation_below', .5)
+        if score < remediation_below:
+            return result('remediate', 'low_practice_score', kid)
+        if score < practice_result['threshold']:
+            return result('review', 'practice_below_threshold', kid)
+        repeated = list(practice_result.get('repeated_failed_objectives', []))
+        if repeated:
+            return result('confirm', 'repeated_objective_failure', kid,
+                          focus_objective_ids=repeated)
+        failed = list(practice_result.get('failed_objectives', []))
+        if failed:
+            return result('confirm', 'failed_objective_requires_confirmation', kid,
+                          focus_objective_ids=failed)
+        if not practice_result.get('coverage_complete', False):
+            missing = list(practice_result.get('missing_objectives', []))
+            return result('confirm', 'incomplete_objective_coverage', kid,
+                          focus_objective_ids=missing)
+        return result('advance', 'practice_threshold_and_objectives_met', kid)
     ids = [k for k in state['diagnostic_kc_ids'] if k in state['kcs']]
     for kid in ids:
         kc = state['kcs'][kid]

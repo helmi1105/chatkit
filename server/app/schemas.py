@@ -15,7 +15,7 @@ import hashlib
 import random
 import re
 import unicodedata
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -33,6 +33,13 @@ class QcmQuestion(BaseModel):
     explanation: str = Field(default="", description="Une phrase qui justifie la bonne réponse avec la doctrine, page citée")
     kc_id: str = ""
     target_id: str = ""
+    role: str = Field(default="", description="current, review ou integration; declarer le role reel de la question")
+    assessed_kc_ids: List[str] = Field(default_factory=list, description="Identifiants des notions effectivement evaluees")
+    assessed_objective_ids: List[str] = Field(default_factory=list, description="Identifiants des objectifs effectivement evalues, si disponibles")
+    integration_attempt: bool = Field(
+        default=False,
+        description="Vrai si le modele choisit cette question comme integration de plusieurs notions",
+    )
     page: Optional[int] = None
 
 
@@ -47,10 +54,23 @@ class CoverageItem(BaseModel):
     coverage_note: str = ""
 
 
+class PracticeQuestion(QcmQuestion):
+    """Practice output must declare attribution before it can reach scoring."""
+    target_id: str = Field(min_length=1, description="Identifiant E1.. de la cible réellement évaluée")
+    role: Literal["current", "review", "integration"]
+    assessed_kc_ids: List[str] = Field(
+        min_length=1,
+        description="Identifiants des notions effectivement évaluées",
+    )
+
+
 class PracticePack(BaseModel):
-    n_questions: int = 4
+    n_questions: int = Field(
+        default=0,
+        description="Nombre de questions que le modele juge pedagogiquement necessaire",
+    )
     coverage_plan: List[CoverageItem] = Field(default_factory=list)
-    questions: List[QcmQuestion] = Field(default_factory=list)
+    questions: List[PracticeQuestion] = Field(default_factory=list)
 
 
 class LessonPlan(BaseModel):
@@ -187,6 +207,10 @@ def normalize_question(
         "explanation": re.sub(r"\s+", " ", str(q.get("explanation") or "")).strip(),
         "kc_id": str(q.get("kc_id") or kc_id or "").strip() or kc_id,
         "target_id": str(q.get("target_id") or "").strip(),
+        "role": str(q.get("role") or "").strip(),
+        "assessed_kc_ids": list(q.get("assessed_kc_ids") or []),
+        "assessed_objective_ids": list(q.get("assessed_objective_ids") or []),
+        "integration_attempt": bool(q.get("integration_attempt", False)),
         "page": page,
     }
 

@@ -9,14 +9,15 @@ from app.orchestrator import Orchestrator, Session
 class DoctrineAuditTests(unittest.TestCase):
     def test_pages_and_human_symbols(self):
         data = json.loads((Path(__file__).parent / 'app/doctrine_pages.json').read_text(encoding='utf-8'))
-        self.assertEqual([p['page'] for p in data], list(range(1, 25)))
-        human = [s for s in data[9]['symbols'] if 'humaine' in s['label']]
+        pages = data['pages']
+        self.assertEqual([p['page'] for p in pages], list(range(1, 25)))
+        human = [s for s in pages[9]['symbols'] if 'humaine' in s['label']]
         self.assertEqual(len(human), 2)
         self.assertTrue(all(s['color'] == 'vert' for s in human))
         self.assertIn('haut', human[0]['shape'])
         self.assertIn('bas', human[1]['shape'])
-        self.assertEqual(data[0]['symbols'], [])
-        self.assertEqual(data[23]['symbols'], [])
+        self.assertEqual(pages[0]['symbols'], [])
+        self.assertEqual(pages[23]['symbols'], [])
         doc = Doctrine()
         self.assertIn('B biologique', doc.page_text(10))
         self.assertNotIn('Texte OCR de la page', doc.page_text(10))

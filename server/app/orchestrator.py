@@ -51,6 +51,9 @@ from app.svg_answer import IllustratedAnswer, SVG_INSTRUCTIONS, validate_svg, il
 from app.qa_retrieval import retrieve_question_context
 from app.bank import QuestionBank
 from app.decision_policy import build_learner_state, decide_next_action
+from app.objective_evidence import summarize_objective_evidence, update_objective_evidence
+from app.historical_evidence import historical_error_candidates, prompt_history, raw_chat_history
+from app.question_evidence import credited_kcs
 from app.diagnostic import HierarchicalDiagnostic
 from app.content import doctrine
 from app.providers import (
@@ -62,6 +65,7 @@ from app.providers import (
     current_provider,
 )
 from app.schemas import LETTERS, EssentialTargets, Feedback, LessonOut, PracticePack, QcmList, normalize_questions
+from app.practice_targets import scoped_targets
 from app.storage import store
 from app.viz.radar_html import build_radar_dashboard_html
 from app.widgets import its_widgets as W
@@ -77,11 +81,36 @@ DIAGNOSTIC_Q_NUM = int(os.getenv("DIAGNOSTIC_Q_NUM", "10"))
 DIAGNOSTIC_MODE = os.getenv("DIAGNOSTIC_MODE", "hierarchical")
 DIAGNOSTIC_MAX_QUESTIONS = int(os.getenv("DIAGNOSTIC_MAX_QUESTIONS", "96"))
 THRESHOLD = float(os.getenv("MASTERY_THRESHOLD", "0.7"))
-PRACTICE_MIN_Q = int(os.getenv("PRACTICE_MIN_Q", "4"))
-PRACTICE_MAX_Q = int(os.getenv("PRACTICE_MAX_Q", "8"))
+PRACTICE_MASTERY_ALPHA = float(os.getenv("PRACTICE_MASTERY_ALPHA", "0.6"))
+MODULE_MASTERY_ALPHA = float(os.getenv("MODULE_MASTERY_ALPHA", "0.4"))
 MODULE_THRESHOLD = float(os.getenv("MODULE_THRESHOLD", "0.7"))
 MODULE_MIN_Q = int(os.getenv("MODULE_MIN_Q", "6"))
 MODULE_MAX_Q = int(os.getenv("MODULE_MAX_Q", "12"))
+
+_KEYWORD_STOPWORDS = {
+    "avec", "dans", "pour", "sans", "sous", "entre", "cette", "comme",
+    "plus", "moins", "doit", "sont", "etre", "avoir", "leur", "leurs",
+    "une", "des", "les", "aux", "sur", "par", "qui", "que", "quoi",
+    "notion", "element", "elements", "utiliser", "permet", "permettre",
+}
+
+
+def compact_keywords(texts: List[str], *, limit: int = 12) -> List[str]:
+    """Extract a small, stable keyword cue without copying source passages."""
+    keywords: List[str] = []
+    seen = set()
+    for text in texts:
+        folded = unicodedata.normalize("NFKD", str(text or "")).encode(
+            "ascii", "ignore"
+        ).decode("ascii").casefold()
+        for token in re.findall(r"[a-z0-9]+", folded):
+            if len(token) < 4 or token in _KEYWORD_STOPWORDS or token in seen:
+                continue
+            seen.add(token)
+            keywords.append(token)
+            if len(keywords) >= limit:
+                return keywords
+    return keywords
 DIAGNOSTIC_MIN_MASTERY = float(os.getenv("DIAGNOSTIC_MIN_MASTERY", "0.25"))
 DIAGNOSTIC_MAX_MASTERY = float(os.getenv("DIAGNOSTIC_MAX_MASTERY", "0.55"))
 REMEDIATION_LESSON_BELOW = float(os.getenv("REMEDIATION_LESSON_BELOW", "0.5"))
@@ -423,6 +452,8 @@ class Session:
     diagnostic_learning_queue: List[str] = field(default_factory=list)
     diagnostic_mode: str = "flat"
     practice_evidence_by_kc: Dict[str, List[dict]] = field(default_factory=dict)
+    objective_evidence_by_kc: Dict[str, Dict[str, dict]] = field(default_factory=dict)
+    pending_confirmation_objectives_by_kc: Dict[str, List[str]] = field(default_factory=dict)
     diagnostic_stage: str = ""
     diagnostic_validation_challenge: bool = False
     diagnostic_round: int = 0
@@ -523,6 +554,8 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
         if sess.doctrine_revision != revision:
             sess.current_micro_lesson = ""
             sess.kc_essential_targets = {}
+            sess.objective_evidence_by_kc = {}
+            sess.pending_confirmation_objectives_by_kc = {}
             sess.flashcard_deck = {}
             sess.podcast_cache = {}
             sess.pending_hint_ladder = []
@@ -603,7 +636,11 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
 
     def _next_actions(self, sess: Session) -> List[Tuple[str, str]]:
         """Contextual buttons: what makes sense from the current state."""
-        if sess.phase == "waiting_answers":
+        # Hide the launch action only while a real quiz is still awaiting
+        # answers. Older/stale sessions can retain the phase after their quiz
+        # payload has been cleared; in that state the learner must still be
+        # able to launch the quiz from the lesson.
+        if sess.phase == "waiting_answers" and sess.quiz_questions:
             return [("Poser une question", "question")]
         if sess.module_gate_locked and sess.pending_module_retry:
             return [("Refaire le contr?le du chapitre", "controle"), ("Ma progression", "ma progression")]
@@ -622,6 +659,18 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
                 buttons.append(("Un indice", "indice"))
         buttons.append(("Revoir la lecon", "revoir la lecon"))
         buttons.append(("Ma progression", "ma progression"))
+        return buttons
+
+    def _lesson_actions(self, sess: Session) -> List[Tuple[str, str]]:
+        """Actions shown below a lesson.
+
+        A lesson must always provide a direct path to its quiz. If a quiz is
+        already active, the same action reopens it instead of generating a
+        replacement.
+        """
+        buttons = self._next_actions(sess)
+        if sess.current_kc_id and not any(command == "quiz" for _, command in buttons):
+            buttons = [("Lancer le quiz", "quiz"), *buttons]
         return buttons
 
     def _kc_label(self, kc: KCNode) -> str:
@@ -869,7 +918,7 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
             return [self._text("Aucune notion en cours."), self._actions([("Commencer le diagnostic", "commencer le diagnostic")])]
         if not sess.current_micro_lesson.strip():
             sess.current_micro_lesson = await self._build_lesson(sess, kc, ctx)
-        return [self._text(f"{self._kc_label(kc)}\n\n{sess.current_micro_lesson}"), self._source_card(kc, self._next_actions(sess))]
+        return [self._text(f"{self._kc_label(kc)}\n\n{sess.current_micro_lesson}"), self._source_card(kc, self._lesson_actions(sess))]
 
     def _debug_text(self, sess: Session) -> str:
         lines = [f"scope={sess.scope} phase={sess.phase} current={sess.current_kc_id} action={sess.last_tutor_action}",
@@ -909,8 +958,18 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
             "Contraintes : question de moins de 240 caractères, en français ; 4 propositions courtes (moins de 90 caractères), distinctes, une seule juste ; "
             "answer = lettre A/B/C/D ; explanation = une phrase qui justifie avec la page ; kc_id = l'identifiant fourni ; page = numéro de page source."
         )
+        prompt += f"\nDeclare role=current et assessed_kc_ids=['{kc.id}'] pour cette question."
         out = await run_structured("Diagnostic-QCM", INSTR_QCM, prompt, QcmList, ctx)
-        return normalize_questions(out.questions, kc.id)
+        questions = normalize_questions(out.questions, kc.id)
+        if any(q.get('role') != 'current' or q.get('assessed_kc_ids') != [kc.id]
+               for q in questions):
+            out = await run_structured('Diagnostic-QCM-attribution-repair', INSTR_QCM,
+                                       prompt + '\nRegenerer la question avec le role et le KC demandes.', QcmList, ctx)
+            questions = normalize_questions(out.questions, kc.id)
+            if any(q.get('role') != 'current' or q.get('assessed_kc_ids') != [kc.id]
+                   for q in questions):
+                raise RuntimeError('Diagnostic inexploitable : attribution KC manquante ou incoherente.')
+        return questions
 
     async def _start_diagnostic(self, sess: Session, ctx: Any) -> List[Dict[str, Any]]:
         if DIAGNOSTIC_MODE == "hierarchical":
@@ -1010,14 +1069,63 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
             lines.append("Source : mémento GOC, " + ", ".join(f"p. {p}" for p in pages) + ".")
         return "\n".join(lines)
 
-    async def _build_lesson(self, sess: Session, kc: KCNode, ctx: Any, mistakes_summary: str = "") -> str:
+    async def _build_lesson(
+        self,
+        sess: Session,
+        kc: KCNode,
+        ctx: Any,
+        mistakes_summary: str = "",
+        failed_objectives: Optional[Dict[str, str]] = None,
+    ) -> str:
         level = float(sess.mastery.get(kc.id, sess.diagnostic_profile.get(kc.id, 0.0)))
         attempts = int(sess.attempts_by_kc.get(kc.id, 0))
         labels = list(sess.misconceptions.get(kc.id, []))
         mode, focus = self._lesson_mode(sess, kc, level, attempts, labels)
         pages = self.graph.kc_pages(kc)
         summary = mistakes_summary or sess.last_mistakes_summary
-        cache_key = f"cache/lesson/{getattr(self.doc, 'revision', 'legacy')}/{current_provider.get().provider}/{kc.id}/{mode}.json" if mode in {"first_exposure", "brief_validation"} else None
+        historical_candidates = historical_error_candidates(sess, self.graph, kc.id)
+        no_ecg_raw = bool(getattr(self.graph, "raw_chat_rag", False))
+        chat_history = raw_chat_history(sess, self.graph, kc.id) if no_ecg_raw else ""
+        if no_ecg_raw:
+            rag_query = "\n".join(filter(None, [
+                f"Preparer une lecon sur {kc.title}.", summary, chat_history,
+            ]))
+            if getattr(self, "doc", None) is not None:
+                doctrine_context, rag_pages, rag_retrieval = retrieve_question_context(
+                    self.doc, rag_query, (), max_pages=6, max_chars=7000
+                )
+            else:  # Lightweight unit-test harnesses may omit the doctrine object.
+                doctrine_context = self._kc_context(kc)
+                rag_pages, rag_retrieval = [], {"fallback": "kc_context"}
+            history_prompt = (
+                "Historique brut des echanges precedents :\n"
+                f"{chat_history or 'aucun echange anterieur disponible'}\n"
+                "Aucun resume structure de maitrise, d'objectif ou de relation entre notions "
+                "n'est fourni. Utilise un ancien echange seulement s'il aide reellement la lecon actuelle."
+            )
+        else:
+            structured_history = json.dumps(
+                prompt_history(historical_candidates), ensure_ascii=False
+            )
+            rag_query = "\n".join(filter(None, [
+                f"Preparer une lecon sur {kc.title}.", summary, structured_history,
+            ]))
+            if getattr(self, "doc", None) is not None:
+                doctrine_context, rag_pages, rag_retrieval = retrieve_question_context(
+                    self.doc, rag_query, (), max_pages=6, max_chars=7000
+                )
+            else:  # Lightweight unit-test harnesses may omit the doctrine object.
+                doctrine_context = self._kc_context(kc)
+                rag_pages, rag_retrieval = [], {"fallback": "kc_context"}
+            history_prompt = (
+                "Erreurs historiques antérieures éventuellement utiles : "
+                f"{structured_history}\n"
+                "Utilise une erreur historique seulement si elle aide réellement à comprendre la notion actuelle. "
+                "Ne la mentionne pas si elle est sans rapport ou déjà résolue sans fragilité utile."
+            )
+        cache_key = (f"cache/lesson/{getattr(self.doc, 'revision', 'legacy')}/{current_provider.get().provider}/{kc.id}/{mode}.json"
+                     if mode in {"first_exposure", "brief_validation"}
+                     and not historical_candidates and not no_ecg_raw else None)
         cached = await self.store.aget_json(cache_key, None) if cache_key else None
         if isinstance(cached, dict) and cached.get("text"):
             text = str(cached["text"])
@@ -1030,8 +1138,11 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
                 f"Niveau estimé de l'apprenant sur cette notion : {level:.2f} (0 = rien, 1 = maîtrise ; une estimation issue du diagnostic n'est pas une validation).\n"
                 f"Tentatives de quiz sur cette notion : {attempts}. Mode de leçon : {mode}. Consigne : {focus}\n"
                 f"Confusions détectées : {labels or 'aucune'}\n"
+                f"Objectifs échoués à traiter (target_id et texte) : "
+                f"{json.dumps(failed_objectives or {}, ensure_ascii=False)}\n"
                 f"Erreurs récentes : {summary or 'aucune'}\n\n"
-                f"Extrait du mémento (source unique autorisée) :\n{self._kc_context(kc)}\n\n"
+                f"{history_prompt}\n\n"
+                f"Passages du mémento fournis au générateur :\n{doctrine_context}\n\n"
                 "Rédige la leçon en français, courte mais complète sur la doctrine de cette notion : essential_information = 3 à 6 points précis "
                 "(formes, couleurs, symboles, règles avec leur signification exacte), rule_to_remember = la règle en une phrase, "
                 "operational_example = une situation concrète de sapeur-pompier, common_mistake = la confusion typique, self_check = une question "
@@ -1047,6 +1158,9 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
             "diagnostic_level": sess.diagnostic_profile.get(kc.id), "learner_level_for_adaptation": level, "attempts": attempts,
             "misconceptions": labels, "source_pages": pages, "word_estimate": len(text.split()), "lesson_plan": plan,
             "lesson_budget_words": plan.get("max_words"), "lesson_mode": mode, "lesson_preview": text[:1200], "cached": bool(cached),
+            "historical_evidence_candidates": historical_candidates,
+            "generation_context_mode": "raw_chat_plus_rag" if no_ecg_raw else "structured_history_plus_rag",
+            "rag_source_pages": rag_pages, "rag_retrieval": rag_retrieval,
         })
         return text
 
@@ -1054,11 +1168,16 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
     # PRACTICE
     # =====================================================
     async def _essential_targets(self, sess: Session, kc: KCNode, ctx: Any) -> List[str]:
+        pages = self.graph.kc_pages(kc)
+        rules = self.doc.rules_for_pages(pages)
+        scoped = scoped_targets(kc.id, rules)
+        if scoped is not None:
+            # Replace page-wide targets cached by earlier sessions.
+            sess.kc_essential_targets[kc.id] = scoped
+            return scoped
         cached = sess.kc_essential_targets.get(kc.id)
         if cached:
             return cached
-        pages = self.graph.kc_pages(kc)
-        rules = self.doc.rules_for_pages(pages)
         if len(rules) >= 3:
             targets = rules[:10]
         else:
@@ -1084,6 +1203,13 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
         kc = self._kc(sess.current_kc_id)
         if not kc:
             return [self._text("Notion introuvable dans le plan du cours.")]
+        if sess.scope == "practice" and sess.phase == "waiting_answers" and sess.quiz_questions:
+            questions = list(sess.quiz_questions.values())
+            title = f"Quiz · {kc.title} · {len(questions)} questions"
+            return [
+                self._text("Ce quiz est déjà prêt. Vous pouvez reprendre là où vous vous êtes arrêté."),
+                {"type": "qcm", "data": qcm_widget_data(title, questions)},
+            ]
         sess.can_advance = False
         sess.validated_kc_id = None
         challenge = sess.diagnostic_validation_challenge
@@ -1096,86 +1222,279 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
         difficulty = "easy" if attempts_before <= 0 or mastery < 0.4 else ("medium" if mastery < THRESHOLD else "hard")
         if challenge:
             difficulty = "medium"
-        review_kcs = [self.graph.nodes[i] for i in self.graph.previous_kcs(kc.id, limit=2) if i in self.graph.nodes]
         targets = await self._essential_targets(sess, kc, ctx)
+        targets_payload = [{"target_id": f"E{i}", "target": t} for i, t in enumerate(targets, start=1)]
+        confirmation_ids = list(dict.fromkeys(sess.pending_confirmation_objectives_by_kc.get(kc.id, [])))
+        confirmation_targets = [t for t in targets_payload if t["target_id"] in confirmation_ids]
+        targeted_confirmation = bool(confirmation_targets)
+        active_targets = confirmation_targets if targeted_confirmation else targets_payload
+        review_kcs = ([] if targeted_confirmation else
+                      [self.graph.nodes[i] for i in self.graph.previous_kcs(kc.id, limit=2)
+                       if i in self.graph.nodes])
+        implicit_prior_integration = bool(
+            getattr(self.graph, 'implicit_prior_integration', False)
+        )
+        prior_learning_available = (
+            bool(self.graph.has_prior_learning(kc.id))
+            if implicit_prior_integration else bool(review_kcs)
+        )
+        integration_eligible = (prior_learning_available and not targeted_confirmation
+                                and kc.id != 'g_k4')
         mistakes = sess.last_mistakes_summary.strip()
+        historical_candidates = historical_error_candidates(sess, self.graph, kc.id)
+        no_ecg_raw = bool(getattr(self.graph, "raw_chat_rag", False))
+        chat_history = raw_chat_history(sess, self.graph, kc.id) if no_ecg_raw else ""
+        if no_ecg_raw:
+            rag_query = "\n".join(filter(None, [
+                f"Creer un quiz sur {kc.title}.", chat_history, sess.current_micro_lesson,
+            ]))
+            if getattr(self, "doc", None) is not None:
+                practice_doctrine_context, practice_rag_pages, practice_rag = retrieve_question_context(
+                    self.doc, rag_query, (), max_pages=6, max_chars=7000
+                )
+            else:  # Lightweight unit-test harnesses may omit the doctrine object.
+                practice_doctrine_context = self._kc_context(kc)
+                practice_rag_pages, practice_rag = [], {"fallback": "kc_context"}
+            practice_history_prompt = (
+                "Historique brut des echanges precedents :\n"
+                f"{chat_history or 'aucun echange anterieur disponible'}\n"
+                "Aucun resume structure de maitrise, d'objectif ou de relation entre notions "
+                "n'est fourni. Une question peut reutiliser un ancien echange seulement s'il "
+                "est utile au sujet actuel."
+            )
+        else:
+            structured_history = json.dumps(
+                prompt_history(historical_candidates), ensure_ascii=False
+            )
+            rag_query = "\n".join(filter(None, [
+                f"Creer un quiz sur {kc.title}.", structured_history,
+                sess.current_micro_lesson,
+            ]))
+            if getattr(self, "doc", None) is not None:
+                practice_doctrine_context, practice_rag_pages, practice_rag = retrieve_question_context(
+                    self.doc, rag_query, (), max_pages=6, max_chars=7000
+                )
+            else:  # Lightweight unit-test harnesses may omit the doctrine object.
+                practice_doctrine_context = self._kc_context(kc)
+                practice_rag_pages, practice_rag = [], {"fallback": "kc_context"}
+            practice_history_prompt = (
+                "Erreurs historiques antérieures éventuellement utiles : "
+                f"{structured_history}\n"
+                "Une question peut réutiliser une erreur historique seulement si elle est utile à la notion actuelle. "
+                "Respecte alors role=review ou role=integration et assessed_kc_ids selon ce qui est réellement évalué."
+            )
         mistake_count = len(re.findall(r"\bQ\d+", mistakes))
-        target_n = min(len(targets), 6) + min(2, mistake_count) + (1 if review_kcs and difficulty != "easy" else 0)
-        min_q = max(PRACTICE_MIN_Q, min(PRACTICE_MAX_Q, target_n))
-        max_q = max(min_q, min(PRACTICE_MAX_Q, min_q + 2))
-        if challenge:
-            min_q = max(min_q, len(targets))
-            max_q = max(max_q, min_q)
+        # Quiz length follows the number of active objectives. Generated
+        # quizzes are asked to cover every objective, while omissions remain
+        # observable evidence instead of triggering a hidden repair call.
+        bank_q = max(1, len(active_targets))
         seen = set(sess.seen_question_ids)
         from_bank = False
         questions: List[dict] = []
-        if not challenge and self.bank.count(kc.id) >= min_q:
-            questions = self.bank.draw(kc.id, min_q, exclude_ids=seen, difficulty=difficulty)
+        qcm_call_budget: Optional[Dict[str, int]] = None
+        if (not challenge and not targeted_confirmation and not integration_eligible
+                and self.bank.count(kc.id) >= bank_q):
+            questions = self.bank.draw(kc.id, bank_q, exclude_ids=seen, difficulty=difficulty)
             from_bank = bool(questions)
+            expected_target_ids = {f"E{i}" for i in range(1, len(targets) + 1)}
+            if questions and any(q.get("target_id") not in expected_target_ids for q in questions):
+                questions = []
+                from_bank = False
         coverage_plan: Any = []
         if not questions:
+            # One practice quiz may use at most two model invocations in total:
+            # the typed generation and, only if needed, its structured-output
+            # fallback. Semantic quality is evaluated later rather than repaired.
+            qcm_call_budget = {"remaining": 2, "used": 0}
             self._charge_budget(sess)
-            _progress(f"Quiz sur « {kc.title} » ({min_q} à {max_q} questions)", "write")
-            targets_payload = [{"target_id": f"E{i}", "target": t} for i, t in enumerate(targets, start=1)]
-            review_payload = [{"id": r.id, "title": r.title} for r in review_kcs]
+            _progress(f"Quiz adaptatif sur « {kc.title} »", "write")
+            review_payload = []
+            for review_kc in review_kcs:
+                review_pages = self.graph.kc_pages(review_kc)
+                review_rules = (
+                    self.doc.rules_for_pages(review_pages)
+                    if getattr(self, 'doc', None) is not None else []
+                )
+                review_targets = scoped_targets(review_kc.id, review_rules)
+                review_payload.append({
+                    "id": review_kc.id,
+                    "title": review_kc.title,
+                    "keywords": compact_keywords(
+                        [review_kc.title, *(review_targets or review_rules)[:4]]
+                    ),
+                })
+            if implicit_prior_integration and integration_eligible:
+                integration_instruction = (
+                    "Genere au moins une question mobilisant conjointement le contenu actuellement "
+                    "etudie et un acquis anterieur pertinent. Aucun nom, identifiant, "
+                    "catalogue ou relation de notions anterieures ne t'est fourni. Choisis cet acquis "
+                    "uniquement a partir du contexte doctrinal ordinaire disponible. La question doit "
+                    "necessiter les deux acquis, pas seulement mentionner un exemple anterieur. Mets "
+                    "integration_attempt=true sur chaque integration choisie et false sur les autres. "
+                    "Ne devine et n'invente aucun identifiant de notion anterieure; declare seulement "
+                    "les identifiants dont tu disposes reellement. Son target_id reste une cible E de "
+                    "la notion actuelle."
+                )
+                previous_context_instruction = (
+                    "Aucun nom, identifiant, catalogue ou relation de notion precedente n'est fourni."
+                )
+            else:
+                integration_instruction = (
+                    f"Genere au moins une question reellement integrative entre la notion actuelle "
+                    f"{kc.id} et une notion pertinente de cette liste : {review_payload}. "
+                    "Cette question declare role=integration et assessed_kc_ids contient le KC actuel "
+                    "et uniquement le ou les KC precedents reellement necessaires. Sa resolution doit "
+                    "necessiter une regle de chaque notion : mentionner seulement le nom, la couleur ou "
+                    "un exemple du KC precedent ne suffit pas. Son target_id reste une cible E de la "
+                    "notion actuelle. "
+                    if integration_eligible else
+                    "Ne genere aucune question d'integration pour ce quiz."
+                )
+                previous_context_instruction = (
+                    "Notions precedentes utilisables si une integration est pedagogiquement utile "
+                    f"(le quiz doit rester centre sur la notion actuelle) : {review_payload or 'aucune'}"
+                )
             prompt = (
                 f"Notion à valider : « {kc.title} » ({kc.id}). Difficulté : {difficulty} "
                 "(easy = reconnaissance et définitions ; medium = application ; hard = transfert, comparaison, distracteurs plausibles).\n"
-                f"Nombre de questions attendu : entre {min_q} et {max_q}.\n"
-                f"Cibles à couvrir (au moins une question par cible) : {targets_payload}\n"
-                f"Notions précédentes utilisables pour 1 question d'intégration au plus (la question doit rester centrée sur la notion actuelle) : {review_payload or 'aucune'}\n"
+                "Choisis le nombre de questions necessaire pour couvrir toutes les cibles actives. "
+                "Chaque cible active doit etre evaluee par au moins une question et aucune cible "
+                "ne doit etre reportee a un quiz ulterieur. Le nombre de questions depend donc des "
+                "cibles, sans quota fixe arbitraire.\n"
+                f"Cibles actives obligatoires : {active_targets}.\n"
+                f"Cibles à confirmer en priorité : {confirmation_targets or 'aucune'}\n"
+                f"{previous_context_instruction}\n"
                 f"Erreurs récentes de l'apprenant à retravailler : {mistakes or 'aucune (premier essai)'}\n"
+                f"{practice_history_prompt}\n"
                 f"Questions déjà posées à cet apprenant (formule des questions DIFFÉRENTES, angle ou exemple nouveau) : {sess.recent_stems.get(kc.id, [])[-12:] or 'aucune'}\n\n"
                 f"Leçon reçue par l'apprenant :\n{sess.current_micro_lesson}\n\n"
-                f"Extrait du mémento (source unique autorisée) :\n{self._kc_context(kc)}\n\n"
+                f"Passages du mémento fournis au générateur :\n{practice_doctrine_context}\n\n"
                 "Contraintes : questions en français de moins de 240 caractères, 4 propositions courtes (moins de 90 caractères) et distinctes, une seule juste, "
                 "answer = lettre, explanation = une phrase de justification avec la page, target_id = E1.. ou M1.. pour une erreur, page = page source, "
                 "pas de question dont la réponse est visible dans l'énoncé, pas de doublon, coverage_plan qui liste chaque cible avec ses numéros de question."
             )
-            out = await run_structured("Practice-QCM", INSTR_PRACTICE, prompt, PracticePack, ctx)
+            prompt += f"\nDecision pedagogique d'integration : {integration_instruction}"
+            if confirmation_targets:
+                prompt += ("\nIl s'agit d'une confirmation ciblee. Genere uniquement des questions "
+                           "nouvelles pour les cibles a confirmer, avec un contexte different. "
+                           "N'evalue aucune autre cible et ne repete aucune question precedente.")
+            if implicit_prior_integration:
+                prompt += ("\nPour chaque question, declare uniquement les identifiants de KC "
+                           "effectivement fournis dans ce prompt. Ne devine jamais le nom ou "
+                           "l'identifiant d'un acquis anterieur. Le champ integration_attempt "
+                           "identifie la tentative demandee sans reveler cet acquis.")
+            else:
+                prompt += ("\nPour chaque question, declare role=current et assessed_kc_ids=[KC actuel], "
+                           "ou role=review avec uniquement les KC precedents reellement testes, "
+                           "ou role=integration avec le KC actuel et les KC precedents necessaires. "
+                           "Ne declare jamais un KC simplement mentionne dans l'enonce. "
+                           "Les questions current/integration doivent dominer le quiz.")
+            out = await run_structured(
+                "Practice-QCM", INSTR_PRACTICE, prompt, PracticePack, ctx,
+                call_budget=qcm_call_budget,
+            )
             questions = normalize_questions(out.questions, kc.id)
             coverage_plan = [c.model_dump() for c in out.coverage_plan]
-            if challenge:
-                expected_targets = {f"E{i}" for i in range(1, len(targets) + 1)}
-                # Prefer one question per objective before filling remaining slots.
-                def select_complete(pool):
+
+            def invalid_attributions(pool):
+                previous_ids = [r.id for r in review_kcs]
+                return [
+                    {
+                        'number': q.get('number'), 'target_id': q.get('target_id'),
+                        'role': q.get('role'), 'assessed_kc_ids': q.get('assessed_kc_ids', []),
+                    }
+                    for q in pool
+                    if (not q.get('role') or not q.get('assessed_kc_ids') or
+                        not credited_kcs(q, kc.id, previous_ids, 'practice'))
+                    and not (
+                        implicit_prior_integration
+                        and (q.get('integration_attempt') or q.get('role') == 'integration')
+                        and kc.id in set(q.get('assessed_kc_ids') or [])
+                    )
+                ]
+
+            def integration_count(pool):
+                previous_ids = {r.id for r in review_kcs}
+                return sum(
+                    1 for q in pool
+                    if q.get('role') == 'integration'
+                    and kc.id in set(q.get('assessed_kc_ids') or [])
+                    and bool(set(q.get('assessed_kc_ids') or []) & previous_ids)
+                )
+
+            def is_integration_attempt(question):
+                return bool(
+                    question.get('integration_attempt')
+                    or integration_count([question]) == 1
+                    or (implicit_prior_integration
+                        and question.get('role') == 'integration')
+                )
+
+            def integration_attempt_count(pool):
+                return sum(1 for question in pool if is_integration_attempt(question))
+
+            # Preserve attribution mistakes as benchmark evidence. A second repair
+            # generation can exceed the two-call budget and would conceal the RKAV
+            # errors being measured. credited_kcs() prevents these items from updating
+            # learner mastery.
+            invalid = invalid_attributions(questions)
+            if invalid:
+                self._record_event(sess, ctx, {
+                    'event': 'practice_attribution_warning', 'kc_id': kc.id,
+                    'invalid_questions': invalid,
+                    'integration_eligible': integration_eligible,
+                    'integration_count': integration_attempt_count(questions),
+                })
+            if targeted_confirmation:
+                focused_ids = {t['target_id'] for t in confirmation_targets}
+                previous_stems = {
+                    str(stem).strip().casefold()
+                    for stem in sess.recent_stems.get(kc.id, [])
+                    if str(stem).strip()
+                }
+
+                def select_focused(pool):
                     unique = []
                     stems = set()
                     for q in pool:
                         stem = q['text'].strip().casefold()
-                        if stem not in stems:
+                        if (q.get('target_id') in focused_ids and stem not in stems
+                                and stem not in previous_stems):
                             unique.append(q)
                             stems.add(stem)
                     selected = []
-                    for target in sorted(expected_targets):
+                    for target in sorted(focused_ids):
                         match = next((q for q in unique if q.get('target_id') == target), None)
                         if match is not None:
                             selected.append(match)
                     selected.extend(q for q in unique if q not in selected)
-                    return selected[:max_q]
-                questions = select_complete(questions)
-                for repair in range(3):
-                    missing = expected_targets - {q.get('target_id') for q in questions}
-                    if expected_targets and not missing and len(questions) >= min_q:
-                        break
-                    if repair == 2 or not expected_targets:
-                        raise RuntimeError('Quiz de validation incomplet : les objectifs doivent tous ?tre couverts.')
-                    self._charge_budget(sess)
-                    self._record_event(sess, ctx, {'event': 'validation_quiz_repair', 'kc_id': kc.id,
-                        'attempt': repair + 1, 'missing_targets': sorted(missing), 'valid_questions': len(questions)})
-                    repair_prompt = prompt + (
-                        f"\nCompl?te le quiz avec {max(len(missing), min_q - len(questions))} nouvelles questions. "
-                        f"Objectifs manquants obligatoires : {sorted(missing)}. "
-                        f"Ne r?p?te pas ces ?nonc?s : {[q['text'] for q in questions]}."
-                    )
-                    extra = await run_structured('Practice-QCM-repair', INSTR_PRACTICE, repair_prompt, PracticePack, ctx)
-                    questions = select_complete(questions + normalize_questions(extra.questions, kc.id))
-                coverage_plan = [{'target_id': target, 'question_numbers': [i for i, q in enumerate(questions, 1)
-                                  if q.get('target_id') == target]} for target in sorted(expected_targets)]
-            else:
-                if len(questions) < min(PRACTICE_MIN_Q, 3):
-                    raise RuntimeError(f"quiz inexploitable ({len(questions)} questions valides)")
-                questions = questions[:max_q]
+                    return selected
+
+                questions = select_focused(questions)
+                coverage_plan = [
+                    {'target_id': target, 'question_numbers': [
+                        i for i, q in enumerate(questions, 1) if q.get('target_id') == target
+                    ]}
+                    for target in sorted(focused_ids)
+                ]
+            if not questions:
+                raise RuntimeError(f"quiz inexploitable ({len(questions)} questions valides)")
+        previous_ids = [r.id for r in review_kcs]
+        final_integration_count = sum(
+            1 for q in questions
+            if q.get('integration_attempt')
+            or (implicit_prior_integration and q.get('role') == 'integration')
+            or (
+                q.get('role') == 'integration'
+                and kc.id in set(q.get('assessed_kc_ids') or [])
+                and bool(set(q.get('assessed_kc_ids') or []) & set(previous_ids))
+            )
+        )
+        current_questions = [q for q in questions if kc.id in credited_kcs(q, kc.id, previous_ids, 'practice')]
+        if not current_questions:
+            raise RuntimeError(
+                'Quiz inexploitable : aucune question ne peut attribuer de preuve a la notion actuelle.'
+            )
         for i, q in enumerate(questions, start=1):
             q["number"] = i
             q["kc_id"] = kc.id
@@ -1184,24 +1503,44 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
         sess.quiz_id = uuid.uuid4().hex[:12]
         sess.quiz_questions = {str(q["number"]): q for q in questions}
         sess.attempts_by_kc[kc.id] = attempts_before + 1
-        sess.last_tutor_action = f"generate_{difficulty}_practice"
+        sess.last_tutor_action = ("generate_targeted_confirmation" if targeted_confirmation
+                                  else f"generate_{difficulty}_practice")
         sess.pending_hint_ladder = []
         sess.hint_index = 0
         sess.seen_question_ids = (sess.seen_question_ids + [str(q.get("id")) for q in questions if q.get("id")])[-400:]
         sess.recent_stems[kc.id] = (sess.recent_stems.get(kc.id, []) + [q["text"] for q in questions])[-24:]
-        expected = {f"E{i}" for i in range(1, len(targets) + 1)}
-        covered = {str(c.get("target_id")) for c in coverage_plan if isinstance(c, dict) and c.get("question_numbers")} if isinstance(coverage_plan, list) else set()
+        expected = ({t['target_id'] for t in active_targets} if targeted_confirmation else
+                    {f"E{i}" for i in range(1, len(targets) + 1)})
+        # Policy coverage counts only questions eligible to credit the current KC.
+        # Invalid declarations remain unchanged for blind benchmark evaluation.
+        covered = {str(q.get("target_id")) for q in current_questions if q.get("target_id")}
         self._record_event(sess, ctx, {
             "event": "practice_started", "tutor_action": sess.last_tutor_action, "kc_id": kc.id, "kc_title": kc.title, "difficulty": difficulty,
-            "attempt": sess.attempts_by_kc[kc.id], "mastery_before": mastery, "n_questions": len(questions), "practice_min_questions": min_q,
-            "practice_max_questions": max_q, "lesson_essential_count": len(targets), "lesson_essential_targets": targets,
-            "practice_essential_targets": targets, "missing_coverage_target_ids": sorted(expected - covered) if not from_bank else [],
+            "attempt": sess.attempts_by_kc[kc.id], "mastery_before": mastery, "n_questions": len(questions),
+            "practice_question_count_strategy": "complete_active_objective_coverage",
+            "lesson_essential_count": len(targets), "lesson_essential_targets": targets,
+            "practice_essential_targets": [t['target'] for t in active_targets], "missing_coverage_target_ids": sorted(expected - covered) if not from_bank else [],
             "coverage_plan": coverage_plan, "review_kc_ids": [r.id for r in review_kcs], "review_kc_titles": [r.title for r in review_kcs],
+            "historical_evidence_candidates": historical_candidates,
+            "generation_context_mode": "raw_chat_plus_rag" if no_ecg_raw else "structured_history_plus_rag",
+            "rag_source_pages": practice_rag_pages, "rag_retrieval": practice_rag,
+            "integration_eligible": integration_eligible,
+            "integration_questions_generated": final_integration_count,
+            "qcm_model_call_limit": 2,
+            "qcm_model_calls_used": int(qcm_call_budget.get("used", 0)) if qcm_call_budget else 0,
             "source_pages": self.graph.kc_pages(kc), "from_bank": from_bank, "quiz_id": sess.quiz_id,
-            "practice_length_strategy": {"basis": "targets + mistakes + integration", "difficulty": difficulty, "attempts_before": attempts_before, "mistake_count": mistake_count},
+            "practice_length_strategy": {
+                "basis": ("targeted confirmation objectives" if targeted_confirmation else
+                          "all active objectives plus justified adaptation"),
+                "difficulty": difficulty, "attempts_before": attempts_before,
+                "mistake_count": mistake_count,
+                "confirmation_target_ids": [t['target_id'] for t in confirmation_targets],
+            },
         })
         title = f"Quiz · {kc.title} · {len(questions)} questions"
-        lead = f"Quiz sur « {kc.title} » : {len(questions)} questions. Validez à partir de {THRESHOLD:.0%} de bonnes réponses."
+        lead = (f"Confirmation ciblée sur « {kc.title} » : {len(questions)} questions nouvelles."
+                if targeted_confirmation else
+                f"Quiz sur « {kc.title} » : {len(questions)} questions. Validez à partir de {THRESHOLD:.0%} de bonnes réponses.")
         return [self._text(lead), {"type": "qcm", "data": qcm_widget_data(title, questions)}]
 
     # =====================================================
@@ -1238,12 +1577,22 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
                 "Contraintes : question de moins de 240 caractères ; 4 propositions courtes et distinctes ; une seule juste ; answer = lettre ; "
                 "explanation = une phrase avec la page ; kc_id = identifiant de la notion testée ; page = page source ; pas de doublon."
             )
+            prompt += "\nChaque question declare role=current et assessed_kc_ids=[kc_id de la notion effectivement testee]."
             out = await run_structured("Module-QCM", INSTR_QCM, prompt, QcmList, ctx)
             generated = normalize_questions(out.questions, kcs[0].id)
             valid_ids = {k.id for k in kcs}
+            if any(q['kc_id'] not in valid_ids or q.get('role') != 'current' or
+                   q.get('assessed_kc_ids') != [q['kc_id']] for q in generated):
+                self._charge_budget(sess)
+                out = await run_structured('Module-QCM-attribution-repair', INSTR_QCM,
+                                           prompt + '\nRegenerer toutes les questions avec un kc_id valide, role=current, '
+                                           'et assessed_kc_ids=[kc_id].', QcmList, ctx)
+                generated = normalize_questions(out.questions, kcs[0].id)
             for q in generated:
                 if q["kc_id"] not in valid_ids:
-                    q["kc_id"] = kcs[0].id
+                    raise RuntimeError('Controle de chapitre inexploitable : KC inconnu.')
+                if q.get('role') != 'current' or q.get('assessed_kc_ids') != [q['kc_id']]:
+                    raise RuntimeError('Controle de chapitre inexploitable : attribution KC manquante ou incoherente.')
             questions.extend(generated[:need])
         if len(questions) < max(3, MODULE_MIN_Q // 2):
             raise RuntimeError("contrôle de chapitre inexploitable")
@@ -1267,17 +1616,22 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
         per: Dict[str, Tuple[int, int]] = {}
         items: List[dict] = []
         correct_total = 0
+        previous = self.graph.previous_kcs(sess.current_kc_id, limit=2) if sess.scope == "practice" and sess.current_kc_id else []
         for num_s, q in sorted(sess.quiz_questions.items(), key=lambda kv: int(kv[0])):
             num = int(num_s)
             learner = str(answers.get(num, "") or "").upper()[:1]
             correct = str(q.get("answer") or "").upper()
             ok = learner == correct
             correct_total += 1 if ok else 0
-            c, t = per.get(q["kc_id"], (0, 0))
-            per[q["kc_id"]] = (c + (1 if ok else 0), t + 1)
+            credited = credited_kcs(q, sess.current_kc_id, previous, sess.scope)
+            for kc_id in credited:
+                c, t = per.get(kc_id, (0, 0))
+                per[kc_id] = (c + (1 if ok else 0), t + 1)
             choices = q.get("choices") or []
             items.append({
                 "id": q.get("id"), "number": num, "question": q.get("text", ""), "choices": choices, "kc_id": q["kc_id"],
+                "target_id": q.get("target_id"),
+                "role": q.get("role"), "assessed_kc_ids": q.get("assessed_kc_ids", []), "credited_kc_ids": credited,
                 "correct": ok, "learner_letter": learner or "-", "correct_letter": correct,
                 "learner_choice": choices[LETTERS.index(learner)] if learner in LETTERS and len(choices) == 4 else "",
                 "correct_choice": choices[LETTERS.index(correct)] if correct in LETTERS and len(choices) == 4 else "",
@@ -1288,8 +1642,13 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
 
     def _correction_block(self, sess: Session, items: List[dict], score: float, passed: Optional[bool], title: str) -> Dict[str, Any]:
         n_ok = sum(1 for it in items if it["correct"])
+        score_label = f"{n_ok}/{len(items)} · {score:.0%}"
+        if sess.scope == "practice" and sess.current_kc_id:
+            assessed = [it for it in items if sess.current_kc_id in it.get("credited_kc_ids", [it.get("kc_id")])]
+            if len(assessed) != len(items):
+                score_label = f"{sum(it['correct'] for it in assessed)}/{len(assessed)} KC · {n_ok}/{len(items)} quiz"
         return {"type": "widget", "title": title, "widget": W.correction_card(
-            title, items, score_label=f"{n_ok}/{len(items)} · {score:.0%}", passed=passed, quiz_id=sess.quiz_id,
+            title, items, score_label=score_label, passed=passed, quiz_id=sess.quiz_id,
             kc_id=sess.current_kc_id or "")}
 
     def _clear_quiz(self, sess: Session) -> None:
@@ -1311,8 +1670,23 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
                 sess.diagnostic_raw_score_by_kc[kc_id] = score
                 sess.diagnostic_profile[kc_id] = DIAGNOSTIC_MIN_MASTERY + score * (DIAGNOSTIC_MAX_MASTERY - DIAGNOSTIC_MIN_MASTERY)
                 continue
-            alpha = 0.6 if sess.scope == "practice" else 0.4
+            alpha = PRACTICE_MASTERY_ALPHA if sess.scope == "practice" else MODULE_MASTERY_ALPHA
             sess.mastery[kc_id] = score if kc_id not in sess.mastery else (1 - alpha) * sess.mastery[kc_id] + alpha * score
+            self._record_event(sess, ctx, {
+                "event": "question_update_provenance", "scope": sess.scope,
+                "provenance_version": 1, "recorded_at_update_time": True,
+                "quiz_id": sess.quiz_id, "updated_kc_id": kc_id,
+                "update_field": "mastery", "before": mastery_before.get(kc_id),
+                "after": sess.mastery[kc_id], "score": score,
+                "contributions": [{"question_number": str(it["number"]),
+                    "question_id": it.get("id"), "declared_role": it.get("role"),
+                    "target_id": it.get("target_id"),
+                    "declared_assessed_kc_ids": it.get("assessed_kc_ids", []),
+                    "credited_kc_ids": it["credited_kc_ids"],
+                    "correct": it["correct"], "score_weight": 1 / t,
+                    "mastery_weight": (alpha if kc_id in mastery_before else 1.0) / t}
+                    for it in items if kc_id in it["credited_kc_ids"]],
+            })
 
         if sess.scope == "diagnostic":
             return await self._after_diagnostic(sess, ctx, overall, per_kc, items, mastery_before)
@@ -1364,11 +1738,41 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
         if not kc:
             self._clear_quiz(sess)
             return [self._text("Notion en cours introuvable.")]
-        c, t = per_kc.get(kc.id, (0, len(sess.quiz_questions)))
-        score = c / max(1, t)
+        c, t = per_kc.get(kc.id, (0, 0))
+        score = c / t if t else 0.0
+        objective_evidence = update_objective_evidence(
+            sess.objective_evidence_by_kc,
+            kc.id,
+            sess.kc_essential_targets.get(kc.id, []),
+            items,
+        )
+        self._record_event(sess, ctx, {
+            'event': 'objective_evidence_update_provenance',
+            'provenance_version': 1,
+            'recorded_at_update_time': True,
+            'quiz_id': sess.quiz_id,
+            'updated_kc_id': kc.id,
+            'objective_evidence_after': objective_evidence,
+            'contributions': [
+                {
+                    'question_number': str(item['number']),
+                    'question_id': item.get('id'),
+                    'target_id': item.get('target_id'),
+                    'credited_kc_ids': item.get('credited_kc_ids', []),
+                    'correct': item['correct'],
+                }
+                for item in items
+                if item.get('target_id') and kc.id in item.get('credited_kc_ids', [])
+            ],
+        })
+        objective_summary = summarize_objective_evidence(
+            sess.kc_essential_targets.get(kc.id, []), objective_evidence
+        )
         state = build_learner_state(sess, self.graph)
         practice_result = {'score': score, 'threshold': THRESHOLD,
-                           'remediation_below': REMEDIATION_LESSON_BELOW}
+                           'remediation_below': REMEDIATION_LESSON_BELOW,
+                           'attempts': sess.attempts_by_kc.get(kc.id, 0),
+                           **objective_summary}
         decision = decide_next_action(state, [], practice_result=practice_result)
         self._record_event(sess, ctx, {'event': 'pedagogical_decision', 'phase': 'practice',
             'quiz_id': sess.quiz_id, 'learner_state': state, 'practice_result': practice_result,
@@ -1378,10 +1782,12 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
             'validation_challenge': sess.diagnostic_validation_challenge,
             'lesson_available': bool(sess.current_micro_lesson),
             'objective_ids_assessed': sorted({q.get('target_id') for q in sess.quiz_questions.values() if q.get('target_id')}),
+            'objective_evidence_after': objective_evidence,
         })
         self._clear_quiz(sess)
         quiz_id = sess.quiz_id
         if decision['action'] != 'advance':
+            sess.pending_confirmation_objectives_by_kc[kc.id] = list(decision.get('focus_objective_ids', []))
             sess.diagnostic_validation_challenge = False
             sess.can_advance = False
             sess.validated_kc_id = None
@@ -1391,7 +1797,8 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
                 labels.append(lab)
             sess.misconceptions[kc.id] = (sess.misconceptions.get(kc.id, []) + labels)[-6:]
             sess.last_mistakes_summary = "\n".join(f"Q{wi['number']}: répondu {wi['learner_letter']} ({wi.get('learner_choice')}) au lieu de {wi['correct_letter']} ({wi.get('correct_choice')}) | {wi['question'][:160]}" for wi in wrong_items[:8])
-            action = "hint_ladder_then_remediate" if labels else "retry_with_micro_lesson"
+            action = ("focused_objective_confirmation" if decision['action'] == 'confirm' else
+                      "hint_ladder_then_remediate" if labels else "retry_with_micro_lesson")
             sess.last_tutor_action = action
             self._charge_budget(sess)
             _progress("Analyse de vos erreurs", "lightbulb")
@@ -1404,13 +1811,43 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
             sess.hint_index = 0
             blocks: List[Dict[str, Any]] = [self._correction_block(sess, items, score, False, f"Corrigé · {kc.title}")]
             if decision['action'] == 'remediate':
-                lesson = await self._build_lesson(sess, kc, ctx, mistakes_summary=sess.last_mistakes_summary)
+                targets = sess.kc_essential_targets.get(kc.id, [])
+                failed_objectives: Dict[str, str] = {}
+                for item in wrong_items:
+                    target_id = str(item.get("target_id") or "")
+                    if kc.id not in item.get("credited_kc_ids", []) or not re.fullmatch(r"E\d+", target_id):
+                        continue
+                    target_index = int(target_id[1:]) - 1
+                    if 0 <= target_index < len(targets):
+                        failed_objectives[target_id] = targets[target_index]
+                lesson = await self._build_lesson(
+                    sess,
+                    kc,
+                    ctx,
+                    mistakes_summary=sess.last_mistakes_summary,
+                    failed_objectives=failed_objectives,
+                )
                 sess.current_micro_lesson = lesson
                 blocks.append(self._text(f"Notion non validée ({score:.0%}, seuil {THRESHOLD:.0%}).\n\n{fb.summary}\n\nLeçon de reprise :\n\n{lesson}"))
+            elif decision['action'] == 'confirm':
+                focus_ids = list(decision.get('focus_objective_ids', []))
+                if focus_ids:
+                    focus = ", ".join(focus_ids)
+                    confirmation_message = (
+                        f"Score global suffisant ({score:.0%}), mais une confirmation ciblée "
+                        f"reste nécessaire pour : {focus}."
+                    )
+                else:
+                    confirmation_message = (
+                        f"Score global suffisant ({score:.0%}), mais les objectifs d'évaluation "
+                        "n'étaient pas disponibles pour vérifier une couverture complète. "
+                        "Un nouveau quiz complet est nécessaire."
+                    )
+                blocks.append(self._text(confirmation_message))
             else:
                 blocks.append(self._text(f"Notion non validée ({score:.0%}, seuil {THRESHOLD:.0%}), mais vous n'êtes pas loin.\n\n{fb.summary}"))
             self._record_event(sess, ctx, {
-                "event": "practice_submitted", "tutor_action": action, "decision_reason": "score below threshold", "kc_id": kc.id, "kc_title": kc.title,
+                "event": "practice_submitted", "tutor_action": action, "decision_reason": decision['reason'], "kc_id": kc.id, "kc_title": kc.title,
                 "score": score, "threshold": THRESHOLD, "passed": False, "wrong_items": wrong_items, "misconceptions": labels,
                 "mastery_before": mastery_before, "mastery_after": dict(sess.mastery), "attempt": sess.attempts_by_kc.get(kc.id, 0),
                 "source_pages": self.graph.kc_pages(kc), "quiz_id": quiz_id, "hints": sess.pending_hint_ladder,
@@ -1419,6 +1856,7 @@ class Orchestrator(HierarchicalDiagnostic, Flashcards, Podcasts):
             return blocks
 
         sess.can_advance = True
+        sess.pending_confirmation_objectives_by_kc.pop(kc.id, None)
         sess.diagnostic_validation_challenge = False
         sess.validated_kc_id = kc.id
         if kc.id not in sess.validated_kc_ids:

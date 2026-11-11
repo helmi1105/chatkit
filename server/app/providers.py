@@ -1,6 +1,6 @@
 # app/providers.py
-"""Model-provider selection (Mistral by default, OpenAI on request, optional
-personal key per session) and the ONE way every generator talks to a model:
+"""Model-provider selection (Mistral by default, OpenAI or OpenRouter on
+request, optional personal key per session) and the ONE way every generator talks to a model:
 `run_structured()`, which asks for a typed (Pydantic) output, retries on
 rate limits and falls back to lenient text parsing.
 
@@ -17,15 +17,25 @@ import os
 import re
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import Any, List, Optional, Type, TypeVar
+from typing import Any, List, MutableMapping, Optional, Type, TypeVar
 
-from agents import Agent, AgentOutputSchema, AsyncOpenAI, FileSearchTool, ModelSettings, OpenAIResponsesModel, Runner
+from agents import (
+    Agent,
+    AgentOutputSchema,
+    AsyncOpenAI,
+    FileSearchTool,
+    ModelSettings,
+    OpenAIChatCompletionsModel,
+    OpenAIResponsesModel,
+    Runner,
+)
 from pydantic import BaseModel, ValidationError
 
 PROVIDER_MISTRAL = "mistral"
 PROVIDER_OPENAI = "openai"
+PROVIDER_OPENROUTER = "openrouter"
 DEFAULT_PROVIDER = os.getenv("DEFAULT_PROVIDER", PROVIDER_MISTRAL)
-KNOWN_PROVIDERS = (PROVIDER_MISTRAL, PROVIDER_OPENAI)
+KNOWN_PROVIDERS = (PROVIDER_MISTRAL, PROVIDER_OPENAI, PROVIDER_OPENROUTER)
 
 VECTOR_STORE_ID = os.getenv("VECTOR_STORE_ID", "vs_6a116b3869e08191aa26f247b322a8c1")
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
@@ -33,17 +43,27 @@ MISTRAL_MODEL = os.getenv("MISTRAL_MODEL", "mistral/mistral-large-latest")
 # pixtral-large-latest was retired: "Invalid model" on 2026-09-15; mistral-large
 # now carries the vision capability itself (checked on /v1/models).
 MISTRAL_VISION_MODEL = os.getenv("MISTRAL_VISION_MODEL", "mistral/mistral-large-latest")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
-OPENAI_VISION_MODEL = os.getenv("OPENAI_VISION_MODEL", "gpt-4.1")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini-2024-07-18")
+OPENAI_VISION_MODEL = os.getenv("OPENAI_VISION_MODEL", "gpt-4o-mini-2024-07-18")
 OPENAI_INVENTORY_MODEL = os.getenv("OPENAI_INVENTORY_MODEL", "gpt-5.4")
 OPENAI_VISUAL_EXPLANATION_MODEL = os.getenv("OPENAI_VISUAL_EXPLANATION_MODEL", "gpt-5.4")
 OPENAI_FREE_QUESTION_MODEL = os.getenv("OPENAI_FREE_QUESTION_MODEL", "gpt-5.4")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openai/gpt-4o-mini")
+OPENROUTER_VISION_MODEL = os.getenv("OPENROUTER_VISION_MODEL", OPENROUTER_MODEL)
+OPENROUTER_HTTP_REFERER = os.getenv("OPENROUTER_HTTP_REFERER", "")
+OPENROUTER_APP_NAME = os.getenv("OPENROUTER_APP_NAME", "PDF2ITS")
 LLM_MAX_RETRIES = int(os.getenv("LLM_MAX_RETRIES", "3"))
 LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "90"))
 # Free Mistral tier: ~1 request/second. Parallel generation is throttled here.
 LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "2"))
 
 T = TypeVar("T", bound=BaseModel)
+
+
+class GenerationBudgetExceeded(RuntimeError):
+    """Raised before a model invocation would exceed a local generation cap."""
 
 
 @dataclass
@@ -76,7 +96,11 @@ def set_provider_from_context(request_context: Any) -> ProviderChoice:
 
 def provider_label(choice: Optional[ProviderChoice] = None) -> str:
     choice = choice or current_provider.get()
-    return "Mistral" if choice.provider == PROVIDER_MISTRAL else "OpenAI"
+    return {
+        PROVIDER_MISTRAL: "Mistral",
+        PROVIDER_OPENAI: "OpenAI",
+        PROVIDER_OPENROUTER: "OpenRouter",
+    }.get(choice.provider, choice.provider)
 
 
 def uses_shared_openai_key(choice: ProviderChoice) -> bool:
@@ -89,6 +113,19 @@ def build_model(choice: ProviderChoice, *, vision: bool = False) -> Any:
         if choice.api_key:
             return OpenAIResponsesModel(model=name, openai_client=AsyncOpenAI(api_key=choice.api_key))
         return name
+    if choice.provider == PROVIDER_OPENROUTER:
+        name = OPENROUTER_VISION_MODEL if vision else OPENROUTER_MODEL
+        headers = {}
+        if OPENROUTER_HTTP_REFERER:
+            headers["HTTP-Referer"] = OPENROUTER_HTTP_REFERER
+        if OPENROUTER_APP_NAME:
+            headers["X-Title"] = OPENROUTER_APP_NAME
+        client = AsyncOpenAI(
+            api_key=choice.api_key or OPENROUTER_API_KEY,
+            base_url=OPENROUTER_BASE_URL,
+            default_headers=headers,
+        )
+        return OpenAIChatCompletionsModel(model=name, openai_client=client)
     model_name = MISTRAL_VISION_MODEL if vision else MISTRAL_MODEL
     from agents.extensions.models.litellm_model import LitellmModel
 
@@ -136,8 +173,13 @@ def make_agent(
         model = build_model(choice, vision=vision)
     kwargs: dict = {}
     if output_type is not None:
-        # non-strict: LiteLLM/Mistral reject some strict-schema constraints
-        kwargs["output_type"] = AgentOutputSchema(output_type, strict_json_schema=False)
+        # OpenAI models support strict Structured Outputs.  LiteLLM and
+        # OpenRouter models vary by upstream provider, so retain the lenient
+        # schema plus the existing validation/fallback path for them.
+        kwargs["output_type"] = AgentOutputSchema(
+            output_type,
+            strict_json_schema=choice.provider == PROVIDER_OPENAI,
+        )
     return Agent[Any](
         name=name,
         model=model,
@@ -200,18 +242,50 @@ def is_rate_limit(exc: Exception) -> bool:
     return any(h in text for h in _RATE_HINTS) and "credit" not in text
 
 
-async def _run_with_retry(agent: Agent[Any], prompt: Any, ctx: Any) -> Any:
+async def _run_with_retry(
+    agent: Agent[Any],
+    prompt: Any,
+    ctx: Any,
+    *,
+    call_budget: Optional[MutableMapping[str, int]] = None,
+    budget_name: str = "generation",
+) -> Any:
     # Include queueing, SDK retries and our backoff in one deadline.
-    return await asyncio.wait_for(_run_attempts(agent, prompt, ctx), timeout=LLM_TIMEOUT_SECONDS)
+    return await asyncio.wait_for(
+        _run_attempts(
+            agent, prompt, ctx,
+            call_budget=call_budget,
+            budget_name=budget_name,
+        ),
+        timeout=LLM_TIMEOUT_SECONDS,
+    )
 
 
-async def _run_attempts(agent: Agent[Any], prompt: Any, ctx: Any) -> Any:
+async def _run_attempts(
+    agent: Agent[Any],
+    prompt: Any,
+    ctx: Any,
+    *,
+    call_budget: Optional[MutableMapping[str, int]] = None,
+    budget_name: str = "generation",
+) -> Any:
     delay = 2.0
     last: Optional[Exception] = None
     for attempt in range(LLM_MAX_RETRIES + 1):
         try:
+            if call_budget is not None:
+                remaining = int(call_budget.get("remaining", 0))
+                if remaining <= 0:
+                    raise GenerationBudgetExceeded(
+                        f"{budget_name}: limite de generations atteinte"
+                    )
+                call_budget["remaining"] = remaining - 1
+                call_budget["used"] = int(call_budget.get("used", 0)) + 1
             async with _sem():
-                return await Runner.run(agent, prompt, context=ctx, max_turns=4)
+                # Structured QCM calls do not use tools. One turn prevents a
+                # single Runner invocation from hiding extra model turns.
+                max_turns = 1 if call_budget is not None else 4
+                return await Runner.run(agent, prompt, context=ctx, max_turns=max_turns)
         except Exception as exc:  # noqa: BLE001
             last = exc
             if attempt >= LLM_MAX_RETRIES or not is_rate_limit(exc):
@@ -231,27 +305,46 @@ async def run_structured(
     *,
     vision: bool = False,
     with_tools: bool = False,
+    call_budget: Optional[MutableMapping[str, int]] = None,
 ) -> T:
-    """Typed generation. First with the SDK's structured output; if the
-    provider refuses the schema or returns something unparsable, one plain
-    text pass with lenient JSON extraction + Pydantic validation."""
-    try:
-        agent = make_agent(name, instructions, output_type=model_cls, vision=vision, with_tools=with_tools)
-        res = await _run_with_retry(agent, prompt, ctx)
-        out = res.final_output
-        if isinstance(out, model_cls):
-            return out
-        if isinstance(out, BaseModel):
-            return model_cls.model_validate(out.model_dump())
-        if isinstance(out, (dict, list)):
-            return model_cls.model_validate(out)
-        if isinstance(out, str) and out.strip():
-            return model_cls.model_validate_json(_extract_json_object(out))
-        raise ValueError("empty structured output")
-    except Exception as first_exc:  # noqa: BLE001
-        if isinstance(first_exc, TimeoutError) or is_rate_limit(first_exc) or "credit" in str(first_exc).lower() or "401" in str(first_exc):
-            raise
-        print(f"[{name}] structured output failed ({type(first_exc).__name__}: {str(first_exc)[:160]}), text fallback")
+    """Generate and locally validate a typed response.
+
+    OpenRouter routes can advertise structured output at the model level while
+    the selected upstream rejects the SDK's response-format parameter. Skip
+    that known-failing request and go directly to JSON text for OpenRouter.
+    Dedicated OpenAI-only paths keep native structured output.
+    """
+    dedicated_openai = name in {
+        "Visual-inventory", "Visual-symbol", "Learner-question",
+    }
+    use_native_structured = (
+        current_provider.get().provider != PROVIDER_OPENROUTER
+        or dedicated_openai
+    )
+    if use_native_structured:
+        try:
+            agent = make_agent(name, instructions, output_type=model_cls, vision=vision, with_tools=with_tools)
+            res = await _run_with_retry(
+                agent, prompt, ctx,
+                call_budget=call_budget,
+                budget_name=name,
+            )
+            out = res.final_output
+            if isinstance(out, model_cls):
+                return out
+            if isinstance(out, BaseModel):
+                return model_cls.model_validate(out.model_dump())
+            if isinstance(out, (dict, list)):
+                return model_cls.model_validate(out)
+            if isinstance(out, str) and out.strip():
+                return model_cls.model_validate_json(_extract_json_object(out))
+            raise ValueError("empty structured output")
+        except Exception as first_exc:  # noqa: BLE001
+            if (isinstance(first_exc, (TimeoutError, GenerationBudgetExceeded))
+                    or is_rate_limit(first_exc) or "credit" in str(first_exc).lower()
+                    or "401" in str(first_exc)):
+                raise
+            print(f"[{name}] structured output failed ({type(first_exc).__name__}: {str(first_exc)[:160]}), text fallback")
     # An EXAMPLE object, not the JSON schema: given the schema, Mistral echoed
     # the schema itself ({"properties": {...}}) instead of an instance
     # (smoke test 2026-09-15).
@@ -263,7 +356,11 @@ async def run_structured(
     agent = make_agent(name, text_instructions, vision=vision, with_tools=with_tools)
     last_err: Optional[Exception] = None
     for _ in range(2):
-        res = await _run_with_retry(agent, prompt, ctx)
+        res = await _run_with_retry(
+            agent, prompt, ctx,
+            call_budget=call_budget,
+            budget_name=name,
+        )
         raw = _extract_json_object(str(res.final_output or ""))
         if not raw:
             last_err = ValueError("empty output")

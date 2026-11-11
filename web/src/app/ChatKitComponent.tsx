@@ -494,7 +494,8 @@ function ChatKitComponent({ userId, theme }: ChatKitComponentProps) {
                   className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-slate-800 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
                 >
                   <option value="mistral">Mistral (par défaut)</option>
-                  <option value="openai">GPT-4.1 (OpenAI)</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="openrouter">OpenRouter</option>
                 </select>
               </div>
               <div>
@@ -505,7 +506,7 @@ function ChatKitComponent({ userId, theme }: ChatKitComponentProps) {
                   type="password"
                   value={apiKey}
                   onChange={(e) => updateApiKey(e.target.value)}
-                  placeholder="sk-... ou clé Mistral"
+                  placeholder="Clé OpenAI, Mistral ou OpenRouter"
                   className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-slate-800 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
                 />
                 <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
