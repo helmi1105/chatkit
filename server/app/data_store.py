@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import os
+import re
 import chatkit.types as chatkit_types
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -162,18 +163,55 @@ class MyDataStore(Store[dict[str, Any]], AttachmentStore[dict[str, Any]]):
         state = self._get_user_state(user_id).threads.get(thread_id)
         if not state:
             raise NotFoundError(f"Thread {thread_id} not found")
-        return self._with_image_origin(state.thread.model_copy(deep=True))
+        return self._with_image_origin(state.thread.model_copy(deep=True), context)
 
     @staticmethod
-    def _with_image_origin(thread: ThreadMetadata) -> ThreadMetadata:
-        parsed = urlparse(os.getenv('PUBLIC_BASE_URL', 'http://127.0.0.1:8000'))
-        if parsed.scheme in {'http', 'https'} and parsed.netloc:
-            origin = f'{parsed.scheme}://{parsed.netloc}'
-            thread.allowed_image_domains = list(dict.fromkeys([*(thread.allowed_image_domains or []), origin]))
+    def _with_image_origin(thread: ThreadMetadata, context: dict[str, Any] | None = None) -> ThreadMetadata:
+        candidates = [os.getenv('PUBLIC_BASE_URL', 'http://127.0.0.1:8000')]
+        if context:
+            candidates.append(str(context.get('frontend_origin') or ''))
+        browser_base = str((context or {}).get('frontend_origin') or candidates[0])
+        if urlparse(browser_base).hostname in {'localhost', '127.0.0.1', '::1'}:
+            # ChatKit rejects data: images whenever this hostname filter is
+            # nonempty. Local development uses validated, embedded PNGs because
+            # its hosted iframe is denied access to the loopback network.
+            thread.allowed_image_domains = []
+            return thread
+        # ChatKit compares URL.hostname against these entries, not URL.origin.
+        # Normalize persisted origins too, so existing chats recover on load.
+        domains = []
+        for candidate in [*(thread.allowed_image_domains or []), *candidates]:
+            value = candidate.strip()
+            parsed = urlparse(value if '://' in value else f'//{value}')
+            if parsed.scheme not in {'', 'http', 'https'}:
+                continue
+            if parsed.hostname:
+                domains.append(parsed.hostname.lower())
+        thread.allowed_image_domains = list(dict.fromkeys(domains))
         return thread
 
+    @staticmethod
+    def _local_widget_images(item: ThreadItem, context: dict[str, Any]) -> ThreadItem:
+        """Repair old local flashcard URLs on read without rewriting history."""
+        base = context.get('frontend_origin') or os.getenv('PUBLIC_BASE_URL', 'http://127.0.0.1:8000')
+        if urlparse(base).hostname not in {'localhost', '127.0.0.1', '::1'}:
+            return item
+        def visit(node):
+            if getattr(node, 'type', None) == 'Image':
+                source = urlparse(node.src)
+                match = re.fullmatch(r'/(?:backend/)?static/generated_flashcards/([a-f0-9]{64}\.png)', source.path)
+                if match and source.hostname in {'localhost', '127.0.0.1', '::1'}:
+                    image = APP_DIR / 'generated_flashcards' / match.group(1)
+                    if image.is_file():
+                        node.src = 'data:image/png;base64,' + base64.b64encode(image.read_bytes()).decode('ascii')
+            for child in getattr(node, 'children', None) or []:
+                visit(child)
+        if getattr(item, 'widget', None) is not None:
+            visit(item.widget)
+        return item
+
     async def save_thread(self, thread: ThreadMetadata, context: dict[str, Any]) -> None:
-        self._with_image_origin(thread)
+        self._with_image_origin(thread, context)
         user_id = self._get_user_id(context)
         user_state = self._get_user_state(user_id)
         state = user_state.threads.get(thread.id)
@@ -186,7 +224,7 @@ class MyDataStore(Store[dict[str, Any]], AttachmentStore[dict[str, Any]]):
     async def load_threads(self, limit: int, after: str | None, order: str, context: dict[str, Any]) -> Page[ThreadMetadata]:
         user_id = self._get_user_id(context)
         threads = sorted(
-            (self._with_image_origin(state.thread) for state in self._get_user_state(user_id).threads.values()),
+            (self._with_image_origin(state.thread, context) for state in self._get_user_state(user_id).threads.values()),
             key=lambda t: t.created_at or datetime.min,
             reverse=(order == "desc"),
         )
@@ -209,7 +247,8 @@ class MyDataStore(Store[dict[str, Any]], AttachmentStore[dict[str, Any]]):
     # ===========================
     async def load_thread_items(self, thread_id: str, after: str | None, limit: int, order: str, context: dict[str, Any]) -> Page[ThreadItem]:
         user_id = self._get_user_id(context)
-        items = [item.model_copy(deep=True) for item in self._get_thread_items(user_id, thread_id)]
+        items = [self._local_widget_images(item.model_copy(deep=True), context)
+                 for item in self._get_thread_items(user_id, thread_id)]
         items.sort(key=lambda item: getattr(item, "created_at", datetime.now(timezone.utc)), reverse=(order == "desc"))
         start = 0
         if after:
@@ -240,7 +279,7 @@ class MyDataStore(Store[dict[str, Any]], AttachmentStore[dict[str, Any]]):
         user_id = self._get_user_id(context)
         for item in self._get_thread_items(user_id, thread_id):
             if item.id == item_id:
-                return item.model_copy(deep=True)
+                return self._local_widget_images(item.model_copy(deep=True), context)
         raise NotFoundError(f"Item {item_id} not found")
 
     async def delete_thread_item(self, thread_id: str, item_id: str, context: dict[str, Any]) -> None:

@@ -15,6 +15,7 @@ import asyncio
 import json
 import os
 import re
+import time
 from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Any, List, MutableMapping, Optional, Type, TypeVar
@@ -272,6 +273,7 @@ async def _run_attempts(
     delay = 2.0
     last: Optional[Exception] = None
     for attempt in range(LLM_MAX_RETRIES + 1):
+        started_at = time.perf_counter()
         try:
             if call_budget is not None:
                 remaining = int(call_budget.get("remaining", 0))
@@ -285,9 +287,26 @@ async def _run_attempts(
                 # Structured QCM calls do not use tools. One turn prevents a
                 # single Runner invocation from hiding extra model turns.
                 max_turns = 1 if call_budget is not None else 4
-                return await Runner.run(agent, prompt, context=ctx, max_turns=max_turns)
+                result = await Runner.run(
+                    agent, prompt, context=ctx, max_turns=max_turns
+                )
+                print(
+                    '[llm] '
+                    f"provider={current_provider.get().provider} "
+                    f"operation={getattr(agent, 'name', 'generation')} "
+                    f"attempt={attempt + 1} seconds={time.perf_counter() - started_at:.2f} "
+                    'status=ok'
+                )
+                return result
         except Exception as exc:  # noqa: BLE001
             last = exc
+            print(
+                '[llm] '
+                f"provider={current_provider.get().provider} "
+                f"operation={getattr(agent, 'name', 'generation')} "
+                f"attempt={attempt + 1} seconds={time.perf_counter() - started_at:.2f} "
+                f"status=error error={type(exc).__name__}"
+            )
             if attempt >= LLM_MAX_RETRIES or not is_rate_limit(exc):
                 raise
             await asyncio.sleep(delay)

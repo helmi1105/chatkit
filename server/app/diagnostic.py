@@ -1,5 +1,6 @@
 """Curriculum screening with bounded, rule-based follow-ups and auditable evidence."""
 import json
+import os
 import uuid
 
 from pydantic import BaseModel, Field
@@ -7,6 +8,18 @@ from pydantic import BaseModel, Field
 from app.providers import run_structured
 from app.decision_policy import build_learner_state, decide_next_action, evidence_status, select_followups, evidence_task
 from app.schemas import QcmQuestion, normalize_questions
+
+
+# Keep enough doctrine for a complete chapter while avoiding the latency and
+# distraction caused by sending the largest possible source bundle every time.
+# Deployments can raise this value for unusually dense chapters without a code
+# change. Focused one-KC repairs retain their smaller 6,000-character context.
+DIAGNOSTIC_CONTEXT_MAX_CHARS = max(
+    6000, int(os.getenv('DIAGNOSTIC_CONTEXT_MAX_CHARS', '20000'))
+)
+DIAGNOSTIC_REPAIR_MAX_ATTEMPTS = max(
+    1, int(os.getenv('DIAGNOSTIC_REPAIR_MAX_ATTEMPTS', '2'))
+)
 
 
 class DiagnosticRound(BaseModel):
@@ -216,7 +229,14 @@ class HierarchicalDiagnostic:
                           'evidence_type': evidence_type, 'selection_reason': reason,
                           'previous_evidence': observations})
         pages = sorted({p for kid in ids for p in self.graph.kc_pages(self.graph.nodes[kid])})
-        source = self.doc.pages_text(pages, max_chars=30000)
+        source = self.doc.pages_text(
+            pages, max_chars=DIAGNOSTIC_CONTEXT_MAX_CHARS
+        )
+        print(
+            f"[diagnostic] generation chapter={group['module_id']} "
+            f"kcs={len(ids)} pages={len(pages)} context_chars={len(source)} "
+            f"context_limit={DIAGNOSTIC_CONTEXT_MAX_CHARS}"
+        )
         self._charge_budget(sess)
         out = await run_structured('Hierarchical-diagnostic',
             'Tu es formateur. Utilise uniquement les extraits fournis. Une réponse correcte par QCM, quatre choix distincts. '
@@ -278,6 +298,10 @@ class HierarchicalDiagnostic:
                 sess, group['title'], stage, repair_tasks, ctx,
                 max_attempts=1,
             )
+            print(
+                '[diagnostic] focused_repair '
+                f"kcs={','.join(sorted(invalid_content_ids))} attempts=1"
+            )
             by_kc = {q['kc_id']: q for q in questions
                      if q['kc_id'] not in invalid_content_ids}
             by_kc.update({q['kc_id']: q for q in repaired})
@@ -286,9 +310,13 @@ class HierarchicalDiagnostic:
                 question['number'] = number
         elif not mapping_ok or not attribution_ok:
             # Structural failures need regeneration for every requested KC.
+            print(
+                '[diagnostic] structural_repair '
+                f"kcs={len(tasks)} max_attempts={DIAGNOSTIC_REPAIR_MAX_ATTEMPTS}"
+            )
             questions, fallback_scenario = await self._regenerate_diagnostic_questions_individually(
                 sess, group['title'], stage, tasks, ctx,
-                max_attempts=3,
+                max_attempts=DIAGNOSTIC_REPAIR_MAX_ATTEMPTS,
             )
             if fallback_scenario:
                 out.scenario = fallback_scenario

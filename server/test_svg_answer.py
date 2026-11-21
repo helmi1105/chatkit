@@ -15,18 +15,24 @@ class SvgTests(unittest.TestCase):
         from pathlib import Path
         from PIL import Image
         from app.svg_answer import inline_image_url
-        with tempfile.TemporaryDirectory() as folder, patch('app.svg_answer.INLINE_IMAGE_DIR', Path(folder)):
+        with tempfile.TemporaryDirectory() as folder, \
+                patch('app.svg_answer.INLINE_IMAGE_DIR', Path(folder)), \
+                patch.dict('os.environ', {'PUBLIC_BASE_URL': 'https://app.example'}):
             url = inline_image_url(SVG)
-            import base64
-            self.assertTrue(url.startswith('data:image/png;base64,'))
-            self.assertNotIn('http://', url)
             path = next(Path(folder).glob('*.png'))
-            self.assertEqual(base64.b64decode(url.split(',', 1)[1]), path.read_bytes())
+            self.assertEqual(
+                url,
+                f'https://app.example/static/generated_flashcards/{path.name}',
+            )
             self.assertEqual(path.read_bytes()[:8], b'\x89PNG\r\n\x1a\n')
             with Image.open(path) as picture:
                 self.assertGreater(len(picture.getcolors(1000000)), 1)
                 self.assertLessEqual(max(picture.size), 1200)
             self.assertEqual(inline_image_url(SVG), url)
+            self.assertIn(
+                'data:image/png;base64,',
+                inline_image_url(SVG, public_base='http://localhost:3000/backend'),
+            )
             self.assertEqual(len(list(Path(folder).iterdir())), 1)
 
     def test_local_arrow_markers(self):

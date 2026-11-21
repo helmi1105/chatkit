@@ -45,18 +45,21 @@ class FlashcardTests(unittest.IsolatedAsyncioTestCase):
             pack = FlashcardPack(cards=[dict(question=f'Q{i}', answer='Secret', page=page,
                                             svg=svg, svg_side=side) for i in range(3)])
             with patch('app.flashcards.run_structured', new=AsyncMock(return_value=pack)) as model:
-                blocks = await orch._flashcards(sess, 'flashcards', None)
+                ctx = SimpleNamespace(request_context={'frontend_origin': 'http://localhost:3000'})
+                blocks = await orch._flashcards(sess, 'flashcards', ctx)
                 self.assertEqual('data:image/png;base64,' in str(blocks), side == 'front')
                 self.assertNotIn('report.open', str(blocks))
                 self.assertNotIn('Secret', str(blocks))
                 self.assertNotIn('/course.pdf', str(blocks))
                 from dataclasses import asdict
                 sess = Session.from_dict(asdict(sess))
-                blocks = await orch._flashcards(sess, f"fiche reveler {sess.flashcard_deck['id']} 0", None)
+                blocks = await orch._flashcards(
+                    sess, f"fiche reveler {sess.flashcard_deck['id']} 0", ctx)
                 self.assertIn('data:image/png;base64,', str(blocks))
-                self.assertNotIn('Voir le schema', str(blocks))
+                self.assertNotIn('Afficher le schéma', str(blocks))
                 self.assertIn('Secret', str(blocks))
                 model.assert_awaited_once()
+                self.assertTrue(model.await_args.kwargs['vision'])
                 self.assertEqual(sess.mastery, {})
 
     async def test_invalid_front_svg_is_dropped_and_back_keeps_text(self):

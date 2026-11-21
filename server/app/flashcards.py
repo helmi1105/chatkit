@@ -92,11 +92,15 @@ class Flashcards:
                 'Garde la référence uniquement dans page ; elle sera affichée après révélation. '
                 'Si la source décrit suffisamment les symboles, inclus au moins une carte avec SVG au recto '
                 'et une question courte comme « Que représente ce symbole ? ». '
+                'Toute carte qui interroge une couleur, une forme, un symbole, un contour, une flèche '
+                'ou un style de ligne doit avoir un svg non vide avec svg_side=front. '
+                'Ne crée jamais une question « Que représente ce symbole ? » sans SVG visible. '
                 'svg_side=front pour identifier un symbole : aucun nom de réponse ni légende révélatrice dans le SVG, ses titres ou descriptions. '
                 'svg_side=back pour rappeler un symbole : le dessin est caché jusqu’à la révélation. '
                 'Si les attributs visuels sont insuffisants, svg vide et question textuelle autonome.',
                 f'Notion : {kc.title}. Crée 3 à 5 cartes sur les définitions, règles et distinctions. '
-                f'Chaque page doit appartenir à {pages}.\n{source}', FlashcardPack, ctx)
+                f'Chaque page doit appartenir à {pages}.\n{source}', FlashcardPack, ctx,
+                vision=True)
             cards = []
             seen = set()
             for card in out.cards:
@@ -140,7 +144,13 @@ class Flashcards:
         if card.get('svg') and (deck['revealed'] or card.get('svg_side', 'back') == 'front'):
             try:
                 svg = validate_svg(card['svg'])
-                illustration = [inline_illustration_widget(svg)]
+                request_context = getattr(ctx, 'request_context', None) or {}
+                frontend_origin = str(request_context.get('frontend_origin') or '').rstrip('/')
+                # Use the same browser-facing proxy as ChatKit API calls.  A
+                # hosted ChatKit renderer cannot fetch a server-only localhost
+                # URL, even when that URL works directly in the browser.
+                asset_base = f'{frontend_origin}/backend' if frontend_origin else None
+                illustration = [inline_illustration_widget(svg, public_base=asset_base)]
             except (ValueError, SyntaxError):
                 body += '\n\nSchéma indisponible. Consultez la source après révélation.'
         children = [Caption(value=kc.title)]

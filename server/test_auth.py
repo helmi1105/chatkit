@@ -135,6 +135,25 @@ class EndpointTests(AccountTests):
             self.assertEqual(self.client.get('/static/' + path).status_code, 404)
         self.assertEqual(self.client.get('/static/guide_fr.html').status_code, 200)
 
+    def test_generated_flashcard_png_is_public_but_directory_is_scoped(self):
+        with TemporaryDirectory() as folder:
+            app_dir = Path(folder)
+            generated = app_dir / 'generated_flashcards'
+            generated.mkdir()
+            (generated / 'hash.png').write_bytes(b'png')
+            (generated / 'secret.txt').write_text('secret', encoding='utf-8')
+            with patch.object(main, 'APP_DIR', app_dir):
+                response = self.client.get('/static/generated_flashcards/hash.png')
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.content, b'png')
+                self.assertEqual(response.headers['access-control-allow-origin'], '*')
+                self.assertEqual(response.headers['cross-origin-resource-policy'], 'cross-origin')
+                self.assertIn('immutable', response.headers['cache-control'])
+                self.assertEqual(
+                    self.client.get('/static/generated_flashcards/secret.txt').status_code,
+                    404,
+                )
+
     def test_other_learner_upload_is_denied(self):
         self.login()
         with patch.dict(main.data_store._attachment_owners, {'owned-by-bob': 'bob'}), patch.object(main, 'ACCESS_CODE', ''):

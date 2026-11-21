@@ -6,6 +6,7 @@ import os
 import hashlib
 import tempfile
 from pathlib import Path
+from urllib.parse import urlparse
 import pymupdf
 import xml.etree.ElementTree as ET
 from pydantic import BaseModel, Field
@@ -98,7 +99,7 @@ def validate_svg(markup):
 INLINE_IMAGE_DIR = Path(__file__).parent / 'generated_flashcards'
 
 
-def inline_image_url(svg):
+def inline_image_url(svg, public_base=None):
     cleaned = validate_svg(svg)
     root = ET.fromstring(cleaned)
     _, _, width, height = map(float, root.attrib['viewBox'].replace(',', ' ').split())
@@ -120,17 +121,30 @@ def inline_image_url(svg):
             os.replace(temporary, target)
         finally:
             temporary.unlink(missing_ok=True)
-    # The hosted HTTPS ChatKit iframe cannot fetch loopback HTTP assets.
-    # Embed raster PNG bytes (not SVG markup), so no cross-origin request occurs.
-    return 'data:image/png;base64,' + base64.b64encode(target.read_bytes()).decode('ascii')
+    # Native ChatKit Image widgets do not reliably render data: URLs. Serve the
+    # validated raster through the application's allow-listed public origin.
+    public_base = (public_base or os.getenv(
+        'PUBLIC_BASE_URL', 'http://127.0.0.1:8000')).rstrip('/')
+    if urlparse(public_base).hostname in {'localhost', '127.0.0.1', '::1'}:
+        # The hosted ChatKit iframe cannot request loopback assets in Chrome.
+        return 'data:image/png;base64,' + base64.b64encode(target.read_bytes()).decode('ascii')
+    return f'{public_base}/static/generated_flashcards/{name}'
 
 
-def inline_illustration_widget(svg):
-    """Validated SVG as a native chat image; no viewer action or answer metadata."""
+def inline_illustration_widget(svg, public_base=None):
+    """Validated SVG rendered directly inside the containing ChatKit card.
+
+    ChatKit's UI is hosted in a separate origin.  Local backend URLs can be
+    unreachable from that renderer even though the user's browser can open
+    them.  ``public_base`` therefore normally points at the browser-facing
+    Next.js ``/backend`` proxy.
+    """
+    cleaned = validate_svg(svg)
     return {'type': 'widget', 'title': 'Illustration', 'widget': Card(children=[
-        Image(src=inline_image_url(svg), alt='Symbole à étudier',
+        Image(src=inline_image_url(cleaned, public_base=public_base), alt='Symbole à étudier',
               width='100%', height=240, fit='contain', frame=True, radius='md'),
-        Caption(value='Illustration schématique — à comparer au mémento.')])}
+        Caption(value='Illustration schématique — à comparer au mémento.'),
+    ])}
 
 
 def illustration_widget(svg, pages, pdf_url):

@@ -134,9 +134,20 @@ async def static_asset(asset_path: str, request: Request):
             return Response(status_code=404)
     elif not (asset_path == 'guide_fr.html' or
               (target.parent == APP_DIR and target.suffix.lower() == '.pdf') or
-              (target.parent == APP_DIR / 'pages' and target.suffix.lower() == '.png')):
+              (target.parent == APP_DIR / 'pages' and target.suffix.lower() == '.png') or
+              (target.parent == APP_DIR / 'generated_flashcards'
+               and target.suffix.lower() == '.png')):
         return Response(status_code=404)
-    return FileResponse(target)
+    response = FileResponse(target)
+    if target.parent == APP_DIR / 'generated_flashcards':
+        # These are content-addressed, public teaching diagrams.  ChatKit's
+        # hosted widget surface may fetch them from a different origin; allow
+        # that resource load without weakening CORS on authenticated routes.
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+        response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 
 def _access_denied(request: Request) -> JSONResponse | None:

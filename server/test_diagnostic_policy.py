@@ -3,7 +3,11 @@ from unittest.mock import AsyncMock, Mock, patch
 from types import SimpleNamespace
 import json
 from app.diagnostic import evidence_status, select_followups
-from app.diagnostic import DiagnosticRound, DiagnosticSingleQuestion
+from app.diagnostic import (
+    DIAGNOSTIC_CONTEXT_MAX_CHARS,
+    DiagnosticRound,
+    DiagnosticSingleQuestion,
+)
 from app.orchestrator import Session, Orchestrator, KcGraph, KC_GRAPH_PATH, compact_keywords
 from app.objective_evidence import expected_objectives, summarize_objective_evidence
 
@@ -182,7 +186,8 @@ class RoundTests(unittest.IsolatedAsyncioTestCase):
     async def test_single_source_page_is_repaired_without_retry(self):
         orch = Orchestrator.__new__(Orchestrator)
         orch.graph = KcGraph.load(KC_GRAPH_PATH)
-        orch.doc = SimpleNamespace(pages_text=lambda *a, **kw: 'Source')
+        pages_text = Mock(return_value='Source')
+        orch.doc = SimpleNamespace(pages_text=pages_text)
         orch._charge_budget = Mock()
         orch._record_event = Mock()
         kid = 'g_k1'
@@ -219,6 +224,10 @@ class RoundTests(unittest.IsolatedAsyncioTestCase):
             await orch._continue_hierarchical(sess, None)
 
         orch._regenerate_diagnostic_questions_individually.assert_not_awaited()
+        self.assertEqual(
+            pages_text.call_args.kwargs['max_chars'],
+            DIAGNOSTIC_CONTEXT_MAX_CHARS,
+        )
         self.assertEqual(sess.quiz_questions['1']['page'], page)
 
     async def test_practice_preserves_invalid_attribution_for_evaluation(self):
